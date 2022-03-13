@@ -12,8 +12,8 @@ public class Main {
         UserInput userInput = new UserInput();
 
         // File path is passed as parameter
-        File file = new File("test.txt");
-        //File file = new File("C:\\Users\\eneye\\Documents\\Abdulmumin\\test.txt");
+        //File file = new File("test.txt");
+        File file = new File("C:\\Users\\eneye\\Documents\\Abdulmumin\\test.txt");
 
         BufferedReader reader = new BufferedReader(new FileReader(file));
         StringBuilder stringBuilder = new StringBuilder();

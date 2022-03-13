@@ -16,10 +16,12 @@ public class UserInput {
             case '<':
 
                 if(input.contains("=")){
-                    convertToJSON2(input);
+                    //convertToJSON2(input);
                 } else {
-                    convertToJSON(input);
+                    //convertToJSON(input);
                 }
+
+                nestingConverter(input);
 
                 break;
             case '{':
@@ -32,6 +34,145 @@ public class UserInput {
                 break;
             default:
         }
+    }
+
+    public void nestingConverter(String xml){
+        //System.out.println(xml);
+        Deque<String> t = addToStack(xml);
+        processXML(t);
+    }
+
+    public void processXML(Deque<String> tokens) {
+        //System.out.println("#*#*#*#*#*#*#*####*#*#*#*#*#");
+        //tokens.stream().forEach(System.out::println);
+        List<String> paths = new ArrayList<>();
+        int i = 0;
+        while(true) {
+
+            String firstString = tokens.peekFirst().replace("<","").replace(">","");
+            String lastString = tokens.peekLast().replace("</","").replace(">","");
+            String path = "", value = "";
+            if (firstString.equalsIgnoreCase(lastString)) {
+                tokens.removeLast();
+                tokens.removeFirst();
+                System.out.println("Element:");
+                path = firstString;
+
+                if(!paths.contains(path)){
+                    paths.add(path);
+                }
+
+                printPaths(paths, "");
+                System.out.println();
+            } else {
+                String currentString = tokens.poll();
+
+                if (currentString.contains("</")) {
+                    System.out.println("Element:");
+                    String[] s = currentString.split(">");
+                    String[] s2 = s[1].split("</");
+
+                    if (s2.length == 2) {
+                        value = s2[0];
+                        path = s2[1];
+                    }
+                    if (value.isEmpty()){
+                        //value = "\"\"";
+                    }
+
+                    //System.out.println(currentString);
+                    /*if (s[0].contains("=")){
+                        String[] s3 = s[0].split(" ");
+                        for(int j = 1; j < s3.length; j++){
+                            System.out.println(s3[j]);
+                        }
+                    }*/
+
+                    printPaths(paths, path);
+                    //System.out.println(path);
+                    printValue(value);
+                    if (s[0].contains("=")){
+                        printAttributes(s[0]);
+                    }
+                    System.out.println();
+                } else if (currentString.contains("/>")){
+                    System.out.println("Element:");
+                    String s = currentString.replace("/>", "").replace("<","").strip();
+
+                    //value = null;
+                    if (s.contains("=")){
+                        String[] s2 = s.split(" ");
+                        path = s2[0].strip();
+                    }else{
+                        path = s;
+                    }
+                    //System.out.println(currentString);
+                    //System.out.println(path);
+                    printPaths(paths, path);
+                    printValue(null);
+                    if (s.contains("=")){
+                        printAttributes(s);
+                    }
+                    System.out.println();
+                }
+            }
+
+            if (i++ == 14){
+                break;
+            }
+
+        }
+        //tokens.stream().forEach(System.out::println);
+    }
+
+    public void printValue(String v){
+        System.out.print("value = ");
+        if(v == null){
+            System.out.println(v);
+        }else{
+            System.out.println("\""+v+"\"");
+        }
+    }
+
+    public void printAttributes(String s){
+        String[] s3 = s.split(" ");
+
+        if(s3.length>0){
+            System.out.println("attributes:");
+            for(int j = 1; j < s3.length; j++){
+                System.out.println(s3[j]);
+            }
+        }
+    }
+
+    public void printPaths(List<String> list, String p){
+        System.out.print("path = ");
+        String s = "";
+        Set<String> l = Set.of();
+        //ArrayList<String> list = new ArrayList<>(l);
+        for(int i = 0; i < list.size(); i++) {
+            if (i == list.size()-1){
+                s += list.get(i);
+            }else{
+                s += list.get(i) + ", ";
+            }
+        }
+        if(p.isEmpty()){
+            System.out.println(s);
+        }else{
+            System.out.println(s+", "+p);
+        }
+
+    }
+
+    public Deque<String> addToStack(String xml){
+        Deque<String> tokens = new LinkedList<>();
+        String ls = System.getProperty("line.separator");
+        String[] lines = xml.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            tokens.add(lines[i].strip());
+        }
+        return tokens;
     }
 
     public void convertToXML(String json) {

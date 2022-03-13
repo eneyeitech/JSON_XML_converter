@@ -1079,6 +1079,12 @@ files:
         }
     }
   learner_created: false
+- name: test.txt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5473#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sun, 13 Mar 2022 09:10:50 UTC
 record: -1
