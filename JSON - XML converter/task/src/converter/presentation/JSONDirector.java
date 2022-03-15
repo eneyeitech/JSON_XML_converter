@@ -44,6 +44,7 @@ public class JSONDirector {
             process = parser.extractName(elements.get(i));
 
             if (parser.isParent(elements.get(i))) {
+                //System.out.println("PROCESS"+process);
                 if (process.startsWith("/")) {
                     xml.goUp();
                     executionStack.pop();

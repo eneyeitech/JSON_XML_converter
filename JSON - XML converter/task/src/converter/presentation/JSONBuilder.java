@@ -21,13 +21,13 @@ public class JSONBuilder {
         while (matcher.find()) {
             attrList.add(matcher.group().trim());
         }
-        //  System.out.println(attrList);
+        //System.out.println(attrList);
         Map<String, String> attrMap = new LinkedHashMap<>();
         String[] attr;
 
         for (String attribute : attrList) {
             attr = attribute.split("\\s*=\\s*");
-
+            //System.out.println(attr[0]);
             attrMap.put(attr[0], attr[1]);
         }
 
@@ -60,7 +60,7 @@ public class JSONBuilder {
             builder.setLength(builder.length() - 2);
             builder.append("\n");
         }*/
-
+//System.out.println(name);
         builder.append("    ".repeat(Math.max(0, depth + 1)));
         //  System.out.println(isParentArray);
         if (!isParentArray) {
@@ -85,6 +85,10 @@ public class JSONBuilder {
                 builder.append("\n");
             });
 
+            if(name.equalsIgnoreCase("attr2")){
+                //System.out.println(name);
+                //System.out.println(value);
+            }
             builder.append("    ".repeat(Math.max(0, depth + 2)));
             builder.append("\"#");
             builder.append(name);
@@ -92,6 +96,7 @@ public class JSONBuilder {
             if (value != null) {
                 if (value.equals("null")) {
                     builder.append(value);
+                    //builder.append("mike");
                 } else {
                     if (!value.startsWith("\"") && !value.startsWith("\"")) {
                         value = "\"" + value;
@@ -100,7 +105,13 @@ public class JSONBuilder {
                     builder.append("\"");
                 }
             } else {
-                builder.append("null");
+
+                if(name.equalsIgnoreCase("attr2")){
+                    builder.append("\"\"");
+                } else {
+                    builder.append("null");
+                }
+
             }
 
             builder.append("\n");

@@ -35,7 +35,7 @@ public class XMLDirector {
         String name;
 
         for (String line : lines) {
-              //System.out.println(line);
+            //  System.out.println(line);
             if (line.matches(".+?(\\s*?\\{)")) {
                 name = parser.extractName(line);
                 jsonStructure.add(name);
@@ -73,7 +73,7 @@ public class XMLDirector {
         jsonStructure.clear();
         builder = new XMLBuilder(false);
 
-        //requests.forEach(System.out::println);
+//        requests.forEach(System.out::println);
 
         for (PseudoElement request : requests) {
             if (request.isGoUp()) {
@@ -90,7 +90,7 @@ public class XMLDirector {
             }
         }
 
-        //builder.getResult();
+        builder.getResult();
     }
 
     public XMLDirector(String content) {
@@ -161,7 +161,7 @@ public class XMLDirector {
             }
         }
 
-        //System.out.println(lines);
+
         return lines;
     }
 

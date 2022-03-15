@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.089s</div>
+<div class="counter">2.828s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">start</td>
-<td class="success">1.089s</td>
+<td class="success">2.828s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -89,245 +89,303 @@
 <span class="code">
 <pre>?[1;31m
 Start test 1?[0m
-Element:
-path = transaction
-Element:
-path = transaction, id
-value = &quot;6753322&quot;
-Element:
-path = transaction, number
-value = &quot;8-900-000-000&quot;
-attributes:
-region = &quot;Russia&quot;
-Element:
-path = transaction, empty1
-value = null
-Element:
-path = transaction, empty2
-value = &quot;&quot;
-Element:
-path = transaction, empty3
-value = &quot;&quot;
-Element:
-path = transaction, inner1
-Element:
-path = transaction, inner1, inner2
-Element:
-path = transaction, inner1, inner2, inner3
-Element:
-path = transaction, inner1, inner2, inner3, key1
-value = &quot;value1&quot;
-Element:
-path = transaction, inner1, inner2, inner3, key2
-value = &quot;value2&quot;
-Element:
-path = transaction, inner4
-Element:
-path = transaction, inner4, inner4
-value = &quot;value3&quot;
-Element:
-path = transaction, inner5
-Element:
-path = transaction, inner5, attr1
-value = &quot;123.456&quot;
-Element:
-path = transaction, inner5, inner4
-value = &quot;value4&quot;
-Element:
-path = transaction, inner6
-value = &quot;value5&quot;
-attributes:
-attr2 = &quot;789.321&quot;
-Element:
-path = transaction, inner7
-value = &quot;value6&quot;
-Element:
-path = transaction, inner8
-Element:
-path = transaction, inner8, attr3
-value = &quot;value7&quot;
-Element:
-path = transaction, inner9
-Element:
-path = transaction, inner9, attr4
-value = &quot;value8&quot;
-Element:
-path = transaction, inner9, inner9
-value = &quot;value9&quot;
-Element:
-path = transaction, inner9, something
-value = &quot;value10&quot;
-Element:
-path = transaction, inner10
-value = null
-attributes:
-attr5 = &quot;&quot;
-Element:
-path = transaction, inner11
-value = &quot;&quot;
-Element:
-path = transaction, inner12
-Element:
-path = transaction, inner12, somekey
-value = &quot;keyvalue&quot;
-Element:
-path = transaction, inner12, inner12
-value = &quot;notnull&quot;
-Element:
-path = meta
-Element:
-path = meta, version
-value = &quot;0.01&quot;
+&lt;transaction&gt;
+    &lt;id&gt;6753322&lt;/id&gt;
+    &lt;number region=&quot;Russia&quot;&gt;8-900-000-00-00&lt;/number&gt;
+    &lt;amount /&gt;
+&lt;/transaction&gt;
+
 ?[1;31m
 Start test 2?[0m
-Element:
-path = root1
-attributes:
-attr1 = &quot;val1&quot;
-attr2 = &quot;val2&quot;
-Element:
-path = root1, elem1
-value = &quot;Value1&quot;
-attributes:
-attr3 = &quot;val3&quot;
-attr4 = &quot;val4&quot;
-Element:
-path = root1, elem2
-value = &quot;Value2&quot;
-attributes:
-attr5 = &quot;val5&quot;
-attr6 = &quot;val6&quot;
-Element:
-path = root2
-value = null
-attributes:
-attr1 = &quot;&quot;
-attr2 = &quot;&quot;
-Element:
-path = root3
-value = &quot;&quot;
-attributes:
-attr1 = &quot;val2&quot;
-attr2 = &quot;val1&quot;
-Element:
-path = root4
-value = &quot;Value4&quot;
+&lt;root&gt;
+    &lt;transaction&gt;
+        &lt;id&gt;6753322&lt;/id&gt;
+        &lt;number region=&quot;Russia&quot;&gt;8-900-000-00-00&lt;/number&gt;
+        &lt;amount /&gt;
+    &lt;/transaction&gt;
+    &lt;meta&gt;
+        &lt;version&gt;0.01&lt;/version&gt;
+    &lt;/meta&gt;
+&lt;/root&gt;
+
 ?[1;31m
 Start test 3?[0m
-Element:
-path = root1
-attributes:
-attr1 = &quot;val1&quot;
-attr2 = &quot;val2&quot;
-Element:
-path = root1, elem1
-value = &quot;Value1&quot;
-attributes:
-attr3 = &quot;val3&quot;
-attr4 = &quot;val4&quot;
-Element:
-path = root1, elem2
-value = &quot;Value2&quot;
-attributes:
-attr5 = &quot;val5&quot;
-attr6 = &quot;val6&quot;
-Element:
-path = root2
-value = null
-attributes:
-attr1 = &quot;&quot;
-attr2 = &quot;&quot;
-Element:
-path = root3
-value = &quot;&quot;
-attributes:
-attr1 = &quot;val2&quot;
-attr2 = &quot;val1&quot;
-Element:
-path = root4
-value = &quot;Value4&quot;
+&lt;root&gt;
+    &lt;transaction&gt;
+        &lt;id&gt;6753322&lt;/id&gt;
+        &lt;number region=&quot;Russia&quot;&gt;8-900-000-000&lt;/number&gt;
+        &lt;empty1 /&gt;
+        &lt;empty2&gt;&lt;/empty2&gt;
+        &lt;empty3&gt;&lt;/empty3&gt;
+        &lt;inner1&gt;
+            &lt;inner2&gt;
+                &lt;inner3&gt;
+                    &lt;key1&gt;value1&lt;/key1&gt;
+                    &lt;key2&gt;value2&lt;/key2&gt;
+                &lt;/inner3&gt;
+            &lt;/inner2&gt;
+        &lt;/inner1&gt;
+        &lt;inner4&gt;
+            &lt;inner4&gt;value3&lt;/inner4&gt;
+        &lt;/inner4&gt;
+        &lt;inner5&gt;
+            &lt;attr1&gt;123.456&lt;/attr1&gt;
+            &lt;inner4&gt;value4&lt;/inner4&gt;
+        &lt;/inner5&gt;
+        &lt;inner6 attr2=&quot;789.321&quot;&gt;value5&lt;/inner6&gt;
+        &lt;inner7&gt;value6&lt;/inner7&gt;
+        &lt;inner8&gt;
+            &lt;attr3&gt;value7&lt;/attr3&gt;
+        &lt;/inner8&gt;
+        &lt;inner9&gt;
+            &lt;attr4&gt;value8&lt;/attr4&gt;
+            &lt;inner9&gt;value9&lt;/inner9&gt;
+            &lt;something&gt;value10&lt;/something&gt;
+        &lt;/inner9&gt;
+        &lt;inner10 attr5=&quot;&quot; /&gt;
+        &lt;inner11&gt;&lt;/inner11&gt;
+        &lt;inner12&gt;
+            &lt;somekey&gt;keyvalue&lt;/somekey&gt;
+            &lt;inner12&gt;notnull&lt;/inner12&gt;
+        &lt;/inner12&gt;
+    &lt;/transaction&gt;
+    &lt;meta&gt;
+        &lt;version&gt;0.01&lt;/version&gt;
+    &lt;/meta&gt;
+&lt;/root&gt;
+
 ?[1;31m
 Start test 4?[0m
-Element:
-path = transaction
-Element:
-path = transaction, id
-value = &quot;13243547&quot;
-Element:
-path = transaction, number
-value = &quot;8-900-000-999&quot;
-attributes:
-region = &quot;USA&quot;
-Element:
-path = transaction, inner1
-Element:
-path = transaction, inner1, inner2
-Element:
-path = transaction, inner1, inner2, inner3
-Element:
-path = transaction, inner1, inner2, inner3, key1
-value = &quot;value1&quot;
-Element:
-path = transaction, inner1, inner2, inner3, key2
-value = &quot;value2&quot;
-Element:
-path = transaction, inner4
-Element:
-path = transaction, inner4, inner4
-value = &quot;value3&quot;
-Element:
-path = transaction, inner5
-Element:
-path = transaction, inner5, attr1
-value = &quot;123.456&quot;
-Element:
-path = transaction, inner5, inner4
-value = &quot;value4&quot;
-Element:
-path = transaction, inner6
-value = &quot;value5&quot;
-attributes:
-attr2 = &quot;789.321&quot;
-Element:
-path = transaction, inner7
-value = &quot;value6&quot;
-Element:
-path = transaction, inner8
-Element:
-path = transaction, inner8, attr3
-value = &quot;value7&quot;
-Element:
-path = transaction, inner9
-Element:
-path = transaction, inner9, attr4
-value = &quot;value8&quot;
-Element:
-path = transaction, inner9, inner9
-value = &quot;value9&quot;
-Element:
-path = transaction, inner9, something
-value = &quot;value10&quot;
-Element:
-path = transaction, inner10
-value = null
-attributes:
-attr5 = &quot;&quot;
-Element:
-path = transaction, inner11
-value = &quot;&quot;
-Element:
-path = transaction, inner12
-Element:
-path = transaction, inner12, somekey
-value = &quot;keyvalue&quot;
-Element:
-path = transaction, inner12, inner12
-value = &quot;notnull&quot;
-Element:
-path = meta
-Element:
-path = meta, version
-value = &quot;0.01&quot;
+{
+    &quot;root&quot;: {
+        &quot;id&quot;: &quot;6753322&quot;,
+        &quot;number&quot;: {
+            &quot;@region&quot;: &quot;Russia&quot;,
+            &quot;#number&quot;: &quot;8-900-000-00-00&quot;
+        },
+        &quot;nonattr1&quot;: null,
+        &quot;nonattr2&quot;: &quot;&quot;,
+        &quot;nonattr3&quot;: &quot;text&quot;,
+        &quot;attr1&quot;: {
+            &quot;@id&quot;: &quot;1&quot;,
+            &quot;#attr1&quot;: null
+        },
+        &quot;attr2&quot;: {
+            &quot;@id&quot;: &quot;2&quot;,
+            &quot;#attr2&quot;: &quot;&quot;
+        },
+        &quot;attr3&quot;: {
+            &quot;@id&quot;: &quot;3&quot;,
+            &quot;#attr3&quot;: &quot;text&quot;
+        },
+        &quot;email&quot;: {
+            &quot;to&quot;: &quot;to_example@gmail.com&quot;,
+            &quot;from&quot;: &quot;from_example@gmail.com&quot;,
+            &quot;subject&quot;: &quot;Project discussion&quot;,
+            &quot;body&quot;: {
+                &quot;@font&quot;: &quot;Verdana&quot;,
+                &quot;#body&quot;: &quot;Body message&quot;
+            },
+            &quot;date&quot;: {
+                &quot;@day&quot;: &quot;12&quot;,
+                &quot;@month&quot;: &quot;12&quot;,
+                &quot;@year&quot;: &quot;2018&quot;,
+                &quot;#date&quot;: null
+            }
+                }
+        }}
+?[1;31m
+Start test 5?[0m
+&lt;elem1 attr1=&quot;val1&quot; attr2=&quot;val2&quot;&gt;
+    &lt;elem2 attr3=&quot;val3&quot; attr4=&quot;val4&quot;&gt;Value1&lt;/elem2&gt;
+    &lt;elem3 attr5=&quot;val5&quot; attr6=&quot;val6&quot;&gt;Value2&lt;/elem3&gt;
+&lt;/elem1&gt;
+
+?[1;31m
+Start test 6?[0m
+{
+    &quot;elem1&quot;: {
+    &quot;@attr1&quot;: &quot;val1&quot;,
+    &quot;@attr2&quot;: &quot;val2&quot;,
+    &quot;#elem1&quot;: {
+        &quot;elem2&quot;: {
+            &quot;@attr3&quot;: &quot;val3&quot;,
+            &quot;@attr4&quot;: &quot;val4&quot;,
+            &quot;#elem2&quot;: &quot;Value1&quot;
+        },
+        &quot;elem3&quot;: {
+            &quot;@attr5&quot;: &quot;val5&quot;,
+            &quot;@attr6&quot;: &quot;val6&quot;,
+            &quot;#elem3&quot;: &quot;Value2&quot;
+        }
+        }}
+}
+?[1;31m
+Start test 7?[0m
+&lt;root&gt;
+    &lt;transaction&gt;
+        &lt;id&gt;6753322&lt;/id&gt;
+        &lt;number region=&quot;Russia&quot;&gt;8-900-000-000&lt;/number&gt;
+        &lt;empty1 /&gt;
+        &lt;empty2&gt;&lt;/empty2&gt;
+        &lt;empty3&gt;&lt;/empty3&gt;
+        &lt;inner1&gt;
+            &lt;inner2&gt;
+                &lt;inner3&gt;
+                    &lt;key1&gt;value1&lt;/key1&gt;
+                    &lt;key2&gt;value2&lt;/key2&gt;
+                &lt;/inner3&gt;
+            &lt;/inner2&gt;
+        &lt;/inner1&gt;
+        &lt;inner4&gt;
+            &lt;inner4&gt;value3&lt;/inner4&gt;
+        &lt;/inner4&gt;
+        &lt;inner5&gt;
+            &lt;attr1&gt;123.456&lt;/attr1&gt;
+            &lt;inner4&gt;value4&lt;/inner4&gt;
+        &lt;/inner5&gt;
+        &lt;inner6 attr2=&quot;789.321&quot;&gt;value5&lt;/inner6&gt;
+        &lt;inner7&gt;value6&lt;/inner7&gt;
+        &lt;inner8&gt;
+            &lt;attr3&gt;value7&lt;/attr3&gt;
+        &lt;/inner8&gt;
+        &lt;inner9&gt;
+            &lt;attr4&gt;value8&lt;/attr4&gt;
+            &lt;inner9&gt;value9&lt;/inner9&gt;
+            &lt;something&gt;value10&lt;/something&gt;
+        &lt;/inner9&gt;
+        &lt;inner10 attr5=&quot;&quot; /&gt;
+        &lt;inner11&gt;&lt;/inner11&gt;
+        &lt;inner12&gt;
+            &lt;somekey&gt;keyvalue&lt;/somekey&gt;
+            &lt;inner12&gt;notnull&lt;/inner12&gt;
+        &lt;/inner12&gt;
+    &lt;/transaction&gt;
+    &lt;meta&gt;
+        &lt;version&gt;0.01&lt;/version&gt;
+    &lt;/meta&gt;
+&lt;/root&gt;
+
+?[1;31m
+Start test 8?[0m
+{
+    &quot;root&quot;: {
+        &quot;id&quot;: &quot;6753322&quot;,
+        &quot;number&quot;: {
+            &quot;@region&quot;: &quot;Russia&quot;,
+            &quot;#number&quot;: &quot;8-900-000-00-00&quot;
+        },
+        &quot;nonattr1&quot;: null,
+        &quot;nonattr2&quot;: &quot;&quot;,
+        &quot;nonattr3&quot;: &quot;text&quot;,
+        &quot;attr1&quot;: {
+            &quot;@id&quot;: &quot;1&quot;,
+            &quot;#attr1&quot;: null
+        },
+        &quot;attr2&quot;: {
+            &quot;@id&quot;: &quot;2&quot;,
+            &quot;#attr2&quot;: &quot;&quot;
+        },
+        &quot;attr3&quot;: {
+            &quot;@id&quot;: &quot;3&quot;,
+            &quot;#attr3&quot;: &quot;text&quot;
+        },
+        &quot;email&quot;: {
+            &quot;to&quot;: &quot;to_example@gmail.com&quot;,
+            &quot;from&quot;: &quot;from_example@gmail.com&quot;,
+            &quot;subject&quot;: &quot;Project discussion&quot;,
+            &quot;body&quot;: {
+                &quot;@font&quot;: &quot;Verdana&quot;,
+                &quot;#body&quot;: &quot;Body message&quot;
+            },
+            &quot;date&quot;: {
+                &quot;@day&quot;: &quot;12&quot;,
+                &quot;@month&quot;: &quot;12&quot;,
+                &quot;@year&quot;: &quot;2018&quot;,
+                &quot;#date&quot;: null
+            }
+                }
+        }}
+?[1;31m
+Start test 9?[0m
+&lt;root&gt;
+    &lt;transaction&gt;
+        &lt;id&gt;6753333&lt;/id&gt;
+        &lt;number region=&quot;Russia&quot;&gt;8-900-777-000&lt;/number&gt;
+        &lt;inner1&gt;
+            &lt;inner2&gt;
+                &lt;inner3&gt;
+                    &lt;key1&gt;value1&lt;/key1&gt;
+                    &lt;key2&gt;value2&lt;/key2&gt;
+                &lt;/inner3&gt;
+            &lt;/inner2&gt;
+        &lt;/inner1&gt;
+        &lt;inner4&gt;
+            &lt;inner4&gt;value3&lt;/inner4&gt;
+        &lt;/inner4&gt;
+        &lt;inner5&gt;
+            &lt;attr1&gt;123.456&lt;/attr1&gt;
+            &lt;inner4&gt;value4&lt;/inner4&gt;
+        &lt;/inner5&gt;
+        &lt;inner6 attr2=&quot;789.321&quot;&gt;value5&lt;/inner6&gt;
+        &lt;inner7&gt;value6&lt;/inner7&gt;
+        &lt;inner8&gt;
+            &lt;attr3&gt;value7&lt;/attr3&gt;
+        &lt;/inner8&gt;
+        &lt;inner9&gt;
+            &lt;attr4&gt;value8&lt;/attr4&gt;
+            &lt;inner9&gt;value9&lt;/inner9&gt;
+            &lt;something&gt;value10&lt;/something&gt;
+        &lt;/inner9&gt;
+        &lt;inner10 attr5=&quot;&quot; /&gt;
+        &lt;inner11&gt;&lt;/inner11&gt;
+        &lt;inner12&gt;
+            &lt;somekey&gt;keyvalue&lt;/somekey&gt;
+            &lt;inner12&gt;notnull&lt;/inner12&gt;
+        &lt;/inner12&gt;
+    &lt;/transaction&gt;
+    &lt;meta&gt;
+        &lt;version&gt;0.01&lt;/version&gt;
+    &lt;/meta&gt;
+&lt;/root&gt;
+
+?[1;31m
+Start test 10?[0m
+{
+    &quot;root&quot;: {
+        &quot;id&quot;: &quot;6753333&quot;,
+        &quot;number&quot;: {
+            &quot;@region&quot;: &quot;Russia&quot;,
+            &quot;#number&quot;: &quot;8-900-888-00-00&quot;
+        },
+        &quot;attr1&quot;: {
+            &quot;@id&quot;: &quot;1&quot;,
+            &quot;#attr1&quot;: null
+        },
+        &quot;attr2&quot;: {
+            &quot;@id&quot;: &quot;2&quot;,
+            &quot;#attr2&quot;: &quot;&quot;
+        },
+        &quot;attr3&quot;: {
+            &quot;@id&quot;: &quot;3&quot;,
+            &quot;#attr3&quot;: &quot;text&quot;
+        },
+        &quot;email&quot;: {
+            &quot;to&quot;: &quot;to_example@gmail.com&quot;,
+            &quot;from&quot;: &quot;from_example@gmail.com&quot;,
+            &quot;subject&quot;: &quot;Project discussion&quot;,
+            &quot;body&quot;: {
+                &quot;@font&quot;: &quot;Verdana&quot;,
+                &quot;#body&quot;: &quot;Body message&quot;
+            },
+            &quot;date&quot;: {
+                &quot;@day&quot;: &quot;12&quot;,
+                &quot;@month&quot;: &quot;12&quot;,
+                &quot;@year&quot;: &quot;2018&quot;,
+                &quot;#date&quot;: null
+            }
+                }
+        }}
 </pre>
 </span>
 </div>
@@ -339,7 +397,7 @@ value = &quot;0.01&quot;
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.3.3</a> at 14 Mar 2022, 20:43:37</p>
+<a href="http://www.gradle.org">Gradle 7.3.3</a> at 15 Mar 2022, 16:16:24</p>
 </div>
 </div>
 </body>

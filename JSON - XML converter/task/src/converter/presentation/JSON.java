@@ -163,16 +163,17 @@ public class JSON {
 
             if (!name.startsWith("#") || isInvalid) {
 
-                String paths = printPath().replace("root, ", "").strip();
-                if (!paths.equalsIgnoreCase("root")) {
-                    System.out.println("Element:");
-                    System.out.print("path = ");
-                    System.out.println(paths);
+                //String paths = printPath().replace("root, ", "").strip();
+                //if (!paths.equalsIgnoreCase("root")) {
+                if(true){
+                    //System.out.println("Element:");
+                    //System.out.print("path = ");
+                    //System.out.println(paths);
 
                 //printPath();
                 if (children.size() == 0) {
                     if ((isInvalid && value == null) || value.equals("\"")) {
-                        System.out.println("value = \"\"");
+                        //System.out.println("value = \"\"");
                         curVal = "";
                     } else {
                         if (value.startsWith("\"") && !value.endsWith("\"")) {
@@ -186,9 +187,9 @@ public class JSON {
                         }
 
                         if (value.endsWith("\"") || value.equals("null")) {
-                            System.out.println("value = " + value);
+                            //System.out.println("value = " + value);
                         } else {
-                            System.out.println("value = \"" + value + "\"");
+                            //System.out.println("value = \"" + value + "\"");
                         }
 
                         if (value.endsWith("\"")) {
@@ -200,13 +201,13 @@ public class JSON {
                     }
                 }
                 if (attributes.size() != 0) {
-                    System.out.println("attributes:");
+                    //System.out.println("attributes:");
                     attributes.forEach((key, value) -> {
                         if (key.startsWith("@")) {
-                            System.out.println(key.substring(1) + " = \"" + value + "\"");
+                            //System.out.println(key.substring(1) + " = \"" + value + "\"");
                             curAttr.put(key.substring(1), value);
                         } else {
-                            System.out.println(key + " = \"" + value + "\"");
+                            //System.out.println(key + " = \"" + value + "\"");
                             curAttr.put(key, value);
                         }
                     });

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 public class XMLParser {
     private Pattern pattern;
     private Matcher matcher;
+    private int i = 0;
 
     //Is safe to use on nested elements
     public String extractName(String element) {
@@ -15,8 +16,10 @@ public class XMLParser {
             String content = matcher.group();
 
             if (content.endsWith("/")) {
+                //System.out.println(content);
                 return content.substring(0, content.length() - 1);
             } else {
+                //System.out.println(element);
                 return content;
             }
         }
@@ -30,10 +33,13 @@ public class XMLParser {
         matcher = pattern.matcher(content);
 
         if (matcher.find()) {
-            return matcher.group().trim();
+            //System.out.println(s);
+            String s = matcher.group().trim();
+
+            return s;
         }
 
-        return "null";
+        return "null";//checked
     }
 
     public String getContent(String element, String name) {
@@ -44,9 +50,11 @@ public class XMLParser {
 
 
         if (matcher.find()) {
-            return matcher.group().replaceAll("</.+?>", "");
+            String s = matcher.group().replaceAll("</.+?>", "");
+
+            return s;//checked
         } else {
-            return null;
+            return null;//checked
         }
     }
 
