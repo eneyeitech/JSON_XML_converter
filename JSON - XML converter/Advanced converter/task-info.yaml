@@ -919,6 +919,2269 @@ files:
 
     }
   learner_created: false
+- name: test.txt
+  visible: true
+  text: |
+    {
+        "transaction": {
+            "id": "13243547",
+            "number": {
+                "@region": "USA",
+                "#number": "8-900-000-999"
+            },
+            "inner1": {
+                "inner2": {
+                    "inner3": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    }
+                }
+            },
+            "inner4": {
+                "@": 123,
+                "#inner4": "value3"
+            },
+            "inner5": {
+                "@attr1": 123.456,
+                "#inner4": "value4"
+            },
+            "inner6": {
+                "@attr2": 789.321,
+                "#inner6": "value5"
+            },
+            "inner7": {
+                "#inner7": "value6"
+            },
+            "inner8": {
+                "@attr3": "value7"
+            },
+            "inner9": {
+                "@attr4": "value8",
+                "#inner9": "value9",
+                "something": "value10"
+            },
+            "inner10": {
+                "@attr5": null,
+                "#inner10": null
+            },
+            "inner11": {
+                "@": null,
+                "#": null
+            },
+            "inner12": {
+                "@somekey": "attrvalue",
+                "#inner12": null,
+                "somekey": "keyvalue",
+                "inner12": "notnull"
+            },
+            "": {
+                "#": null,
+                "secret": "this won't be converted"
+            }
+        },
+        "meta": {
+            "version": 0.01
+        }
+    }
+  learner_created: false
+- name: src/converter/presentation/XMLDirector.java
+  visible: true
+  text: |-
+    package converter.presentation;
+
+    import java.util.ArrayList;
+    import java.util.Arrays;
+    import java.util.List;
+    import java.util.Stack;
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class XMLDirector {
+        private String content;
+        private XMLBuilder builder = new XMLBuilder(true);
+        private JSONParser parser = new JSONParser();
+        private Stack<String> jsonStructure = new Stack<>();
+        private Stack<String> arrays = new Stack<>();
+
+        private void printPath() {
+            for (String string : jsonStructure) {
+                if (!string.startsWith("#")) {
+                    System.out.print(string);
+                    if (!string.equals(jsonStructure.peek())) {
+                        System.out.print(", ");
+                    }
+                }
+            }
+            System.out.println();
+        }
+
+        private void parseElement(List<String> lines) {
+            // lines.forEach(System.out::println);
+            /*if (Math.random() != 2.00) {
+                throw new StackOverflowError();
+            }*/
+
+            String name;
+
+            for (String line : lines) {
+                  //System.out.println(line);
+                if (line.matches(".+?(\\s*?\\{)")) {
+                    name = parser.extractName(line);
+                    jsonStructure.add(name);
+                    builder.createContainer(jsonStructure, name);
+                } else if (line.matches("},?")){
+                    builder.goUp();
+                    jsonStructure.pop();
+                } else {
+                    if (line.matches("\"@.+")) {
+                        Pair<String, String> pair = parser.extractAttribute(line);
+                        builder.addAttribute(pair.getFirst(), pair.getSecond());
+                    } else {
+                        if (line.matches("\"#.+?\"\\s*?:\\s*?((\".*?\")|(null)),?")) {
+                            if (jsonStructure.peek().equals(parser.extractName(line).substring(1))) {
+                                builder.setValue(parser.getValue(line));
+                            } else {
+                                builder.createSingleElement(
+                                        parser.extractName(line).substring(1),
+                                        parser.getValue(line),
+                                        jsonStructure);
+                                builder.stripAttributes();
+                            }
+
+                        } else {
+                            String[] elem = parser.getElement(line);
+                            builder.createSingleElement(elem[0], elem[1], jsonStructure);
+                        }
+                    }
+                }
+            }
+
+            builder.print();
+
+            List<PseudoElement> requests = builder.result();
+            jsonStructure.clear();
+            builder = new XMLBuilder(false);
+
+            //requests.forEach(System.out::println);
+
+            for (PseudoElement request : requests) {
+                if (request.isGoUp()) {
+                    builder.createEnd(jsonStructure.peek(), jsonStructure.size());
+                    jsonStructure.pop();
+                } else if (request.isParent()) {
+                    builder.addContainer(request.getName(), request.getAttributes(),
+                            jsonStructure.size());
+                    jsonStructure.push(request.getName());
+                } else {
+                    builder.createSingleElement(request.getName(),
+                            request.getValue(), request.getAttributes(),
+                            jsonStructure.size());
+                }
+            }
+
+            //builder.getResult();
+        }
+
+        public XMLDirector(String content) {
+            this.content = content;
+        }
+
+        private String insertCharAt(String string, int character) {
+            return string.substring(0, character) +
+                    "\n" + string.substring(character);
+        }
+
+        private List<String> beatifyJSON(String json) {
+            Pattern pattern = Pattern.compile("(\"|false|true|null|\\d)(?=\\s*?[}\\]])|(\\s*?,|[}\\]](?!,))|\\[|\\{(?=\\s*?\")");
+            Matcher matcher = pattern.matcher(json);
+            List<Integer> newlineChars = new ArrayList<>();
+
+            while (matcher.find()) {
+                newlineChars.add(matcher.end());
+            }
+
+            for (int i = 0; i < newlineChars.size(); i++) {
+                json = insertCharAt(json, newlineChars.get(i) + i);
+            }
+
+            List<String> lines = new ArrayList<>(Arrays.asList(json.split("\n")));
+            for (int i = 0; i < lines.size(); i++) {
+                lines.set(i, lines.get(i).trim());
+            }
+
+            for (int i = 0; i < lines.size() - 1; i++) {
+                if (lines.get(i).trim().equals("}") && lines.get(i + 1).trim().equals(",")) {
+                    String brace = lines.get(i);
+                    String dot = lines.get(i + 1);
+                    brace = brace.concat(dot);
+                    lines.set(i, brace);
+                    lines.remove(i + 1);
+                }
+            }
+
+            for (int i = 0; i < lines.size(); i++) {
+                if (lines.get(i).matches("(?:\\s*?\".+?\"\\s*?:\\s*?\\[)|(?:\\s*?\\[)")) {
+                    arrays.push("array");
+                    lines.set(i, lines.get(i).replace("[", "{"));
+                }
+
+                if (arrays.size() > 0 &&
+                        lines.get(i)
+                                .matches("(?:null|true|false|-?\\d+(?:\\.\\d+)?|\\[|(?<!:)\\s*?\".*?\"|\\s*?\\{|(?:\\s*?[\\[{]\\s*?[\\]}]))\\s*?,?")) {
+                    if (!lines.get(i).matches("\".+?\"\\s*?:\\s*?.+")) {
+                        String newLine = "\"element\":".concat(lines.get(i));
+                        lines.set(i, newLine);
+                    }
+                }
+
+                if (lines.get(i).matches("\\s*?],?")) {
+                    //System.out.println(lines.get(i));
+                    arrays.pop();
+                    lines.set(i, lines.get(i).replace("]", "}"));
+                }
+            }
+
+            for (int i = 0; i < lines.size() - 1; i++) {
+                if (lines.get(i).matches("\\s*?\"@.+?\"\\s*?:\\s*?\\{")
+                        && lines.get(i + 1).matches("\\s*?},?")) {
+                    String newAttr = lines.get(i).replace("{", "\"\"");
+                    lines.set(i, newAttr);
+                    lines.remove(i + 1);
+                }
+            }
+
+            //System.out.println(lines);
+            return lines;
+        }
+
+        public void startConversion() {
+            content = content.replaceAll("\\r\\n|\\r|\\n|\\t", " ");
+            content = content.trim().substring(1, content.length() - 1).trim();
+            parseElement(beatifyJSON(content));
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/JSON.java
+  visible: true
+  text: |-
+    package converter.presentation;
+
+    import java.util.*;
+
+    public class JSON {
+        private String name;
+        private String value;
+        private Map<String, String> attributes = new LinkedHashMap<>();
+        private List<JSON> children = new ArrayList<>();
+        private static JSON current;
+        private JSON parent;
+        private boolean isInvalid = false;
+        private boolean stripped = false;
+        private Set<String> additionHistory = new LinkedHashSet<>();
+        private static List<PseudoElement> requests = new ArrayList<>();
+
+        private JSON(String name) {
+
+                this.name = name;
+
+        }
+
+        public void setValue(String value, boolean add) {
+
+            if (current.isInvalid) {
+                current.addChild(current.name, true);
+                current.setValue(value, false);
+                current.goUp();
+            } else {
+                current.value = value;
+            }
+
+            if (add) {
+                current.additionHistory.add("#" + current.name);
+            }
+        }
+
+        public void addAttribute(String key, String value) {
+            if (value.replaceAll("\\s", "").equals("{}")) {
+                value = "";
+            }
+
+            current.additionHistory.add(key);
+            if (value.endsWith(",")) {
+                current.attributes.put(key, value.substring(value.length() - 1));
+            } else {
+                current.attributes.put(key, value);
+            }
+        }
+
+        public void addChild(String name, boolean toAdd) {
+            boolean isValid = true;
+
+            if (toAdd) {
+                current.additionHistory.add("#" + current.name);
+            }
+
+            if (name.length() >= 1) {
+                if (current.name.equals(name.substring(1)) && name.startsWith("#") && current.isInvalid) {
+                    isValid = false;
+                }
+            }
+
+
+            if (current.value != null) {
+                current.isInvalid = true;
+            }
+
+            if (name.startsWith("@")) {
+                current.isInvalid = true;
+            }
+
+            current.children.add(new JSON(name));
+            current.children.get(current.children.size() - 1).parent = current;
+            current = current.children.get(current.children.size() - 1);
+
+            if (!isValid) {
+                current.isInvalid = true;
+            }
+        }
+
+        public void stripAttributes() {
+            Map<String, String> map = current.attributes;
+
+            map.forEach((key, value) -> {
+                addChild(key, false);
+                setValue(value, false);
+                goUp();
+                current.stripped = true;
+            });
+
+            if (current.value != null) {
+                String val = current.value;
+                addChild("#" + current.name, false);
+                setValue(val, false);
+                goUp();
+            }
+
+            if (current.children.size() > 0) {
+                if (current.children.get(0).name.equals(current.name)
+                        && current.name.startsWith("#")
+                        && current.value == null
+                        && current.children.get(0).value != null) {
+                    current.value = current.children.get(0).value;
+                    current.children.clear();
+                }
+            }
+
+
+            current.isInvalid = true;
+            current.attributes.clear();
+        }
+
+        public static JSON root() {
+            //JSON json = new JSON("root");
+            JSON json = new JSON("root");
+            current = json;
+            return json;
+        }
+
+        private String printPath() {
+            if (!name.startsWith("#") || isInvalid) {
+                StringBuilder builder = new StringBuilder();
+
+                if (name.startsWith("@")) {
+                    isInvalid = true;
+                }
+
+                if (isInvalid && name.startsWith("@") || name.startsWith("#")) {
+                    builder.insert(0, name.substring(1));
+                } else {
+                    //System.out.println(name);
+                    //if(!name.equalsIgnoreCase("root")){
+                        builder.insert(0,name);
+                    //}
+
+                }
+
+
+                if (parent != null) {
+                    builder.insert(0, ", ");
+                    builder.insert(0, parent.printPath());
+                }
+
+                return builder.toString();
+            }
+
+            return parent.printPath();
+
+
+        }
+
+        private int count = 0;
+
+        public void print() {
+            String curVal = value;
+            Map<String, String > curAttr = new LinkedHashMap<>();
+
+            if (name.length() != 0) {
+                if ((name.startsWith("#") || name.startsWith("@")) && isInvalid) {
+                    name = name.substring(1);
+                }
+
+                if (!name.startsWith("#") || isInvalid) {
+
+                    String paths = printPath().replace("root, ", "").strip();
+                    if (!paths.equalsIgnoreCase("root")) {
+                        System.out.println("Element:");
+                        System.out.print("path = ");
+                        System.out.println(paths);
+
+                    //printPath();
+                    if (children.size() == 0) {
+                        if ((isInvalid && value == null) || value.equals("\"")) {
+                            System.out.println("value = \"\"");
+                            curVal = "";
+                        } else {
+                            if (value.startsWith("\"") && !value.endsWith("\"")) {
+                                value = value.substring(1);
+                            }
+
+                            if (value.endsWith("\",")) {
+                                value = value.substring(0, value.length() - 2);
+                            } else if (value.endsWith(",")) {
+                                value = value.substring(0, value.length() - 1);
+                            }
+
+                            if (value.endsWith("\"") || value.equals("null")) {
+                                System.out.println("value = " + value);
+                            } else {
+                                System.out.println("value = \"" + value + "\"");
+                            }
+
+                            if (value.endsWith("\"")) {
+                                value = value.substring(1, value.length() - 1);
+                            }
+
+                            curVal = value;
+                            // Logger.getLogger( JSON.class.getName()).info(value);
+                        }
+                    }
+                    if (attributes.size() != 0) {
+                        System.out.println("attributes:");
+                        attributes.forEach((key, value) -> {
+                            if (key.startsWith("@")) {
+                                System.out.println(key.substring(1) + " = \"" + value + "\"");
+                                curAttr.put(key.substring(1), value);
+                            } else {
+                                System.out.println(key + " = \"" + value + "\"");
+                                curAttr.put(key, value);
+                            }
+                        });
+                    }
+                    // System.out.println("invalid = " + isInvalid);
+                    //System.out.println(" ");
+
+                }
+
+            }
+                if (name.startsWith("@")) {
+                    name = name.substring(1);
+                }
+
+                if (children.size() != 0) {
+                    if (!name.startsWith("#") || isInvalid) {
+                        requests.add(PseudoElement.container(name, curAttr, false));
+                    }
+
+                    children.forEach(JSON::print);
+                    //  System.out.println("*******************************************");
+                    //  System.out.println("End of container " + name);
+                    if (!name.startsWith("#") || isInvalid) {
+                        requests.add(PseudoElement.goUpRequest());
+                    }
+                    //   System.out.println("*******************************************");
+                } else {
+                    requests.add(PseudoElement.element(name, curVal, curAttr));
+                }
+
+            }
+        }
+
+        public List<JSON> getChildren() {
+            return children;
+        }
+
+        public void goUp() {
+            if (current.value == null && current.children.size() == 0) {
+                current.isInvalid = true;
+            }
+
+            if (current.isInvalid) {
+                stripAttributes();
+                Iterator<JSON> iterator = current.children.iterator();
+                while (iterator.hasNext())  {
+                    JSON child = iterator.next();
+                    if (child.name.startsWith("@")
+                            || child.name.startsWith("#")) {
+                        if (current.children.
+                                stream()
+                                .anyMatch(o -> o.name
+                                        .equals(child.name
+                                                .substring(1)))) {
+                            iterator.remove();
+                        }
+
+                    }
+                }
+
+                if (current.stripped && current.children.size() > 1 && current.additionHistory.size() > 0) {
+                    int currentIndex = 0;
+                    for (String line : current.additionHistory) {
+                        JSON json =  current.children.stream()
+                                .filter(customer -> line.equals(customer.name))
+                                .findAny()
+                                .orElse(null);
+                        if (json != null) {
+                            current.children.remove(json);
+                            current.children.add(currentIndex, json);
+                            currentIndex++;
+                        }
+                    }
+                }
+
+            }
+
+            if (current.parent != null) {
+                current = current.parent;
+            }
+        }
+
+        public static List<PseudoElement> getRequests() {
+            return requests;
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/XML.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.Map;
+
+    public class XML {
+        private Map<String, String> attributes;
+        private String elementName;
+        private String value;
+        private XML parent;
+        private List<XML> children = new ArrayList<>();
+        private static XML current;
+        private boolean containsContainer = false;
+        private static List<PseudoElement> structure = new ArrayList<>();
+        private boolean isArray = false;
+        private boolean isArrayElement = false;
+        private boolean isContainer = false;
+
+        private XML(String elementName) {
+            this.elementName = elementName;
+        }
+
+        public void addContainer(String name, Map<String, String> attributes) {
+            current.containsContainer = true;
+            current.children.add(new XML(name));
+            current.children.get(current.children.size() - 1).parent = current;
+            current = current.children.get(current.children.size() - 1);
+            current.attributes = attributes;
+        }
+
+        public void addElement(String name, String value,
+                               Map<String, String> attributes) {
+
+            current.children.add(new XML(name));
+            current.children.get(current.children.size() - 1).parent = current;
+            current = current.children.get(current.children.size() - 1);
+            current.attributes = attributes;
+            current.value = value;
+            if (current.parent != null) {
+                current = current.parent;
+            }
+        }
+
+        public List<XML> getChildren() {
+            return children;
+        }
+
+        public void goUp() {
+            current.isContainer = true;
+            if (current.parent != null) {
+                current = current.parent;
+            }
+        }
+
+        public static XML root() {
+            XML xml = new XML("XML_root");
+            current = xml;
+            return xml;
+        }
+
+        public void generate() {
+            boolean isLast = false;
+
+            if (parent != null) {
+                if (elementName.equals(
+                        parent.children.get(parent.children.size() - 1)
+                                .elementName)) {
+                    isLast = true;
+                }
+            }
+
+            if (children.size() > 1) {
+                String name = children.get(0).elementName;
+                isArray = children.stream().allMatch(e -> e.elementName.equals(name));
+                if (isArray) {
+                    children.forEach(child -> child.isArrayElement = true);
+                }
+            }
+
+            if (children.size() == 0 && value == null && isContainer
+                    && attributes.size() == 0) {
+                value = "";
+            }
+
+
+            if (children.size() > 0) {
+                structure.add(PseudoElement.container(elementName, attributes, containsContainer)
+                        .setChild(isLast).setArray(isArray).setArrayElement(isArrayElement));
+                children.forEach(XML::generate);
+                structure.add(PseudoElement.goUpRequest().setChild(isLast).setArray(isArray).setArrayElement(isArrayElement));
+            } else {
+                structure.add(PseudoElement.element(elementName, value, attributes)
+                        .setChild(isLast).setArray(isArray).setArrayElement(parent.isArray));
+            }
+        }
+
+        public static List<PseudoElement> getRequests() {
+            return structure;
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/JSONDirector.java
+  visible: true
+  text: |-
+    package converter.presentation;
+
+    import java.util.*;
+
+    public class JSONDirector {
+        private XML xml;
+        private List<String> content;
+        private JSONBuilder builder = new JSONBuilder();
+        private XMLParser parser = new XMLParser();
+        private Stack<String> executionStack = new Stack<>();
+        private List<PseudoElement> requests = new ArrayList<>();
+
+        private void printContainer(String line, String process) {
+            Map<String, String> attributes;
+
+            executionStack.push(process);
+
+            attributes = builder.listOfAttributes(parser.parseAttributes(line));
+
+            xml.addContainer(executionStack.peek(), attributes);
+        }
+
+        private void printElement(String line, String process) {
+            Map<String, String> attributes;
+
+            executionStack.push(process);
+
+
+            String content = parser.getContent(line,
+                    process);
+
+            attributes = builder.listOfAttributes(parser.parseAttributes(line));
+
+
+            xml.addElement(executionStack.peek(), content, attributes);
+            executionStack.pop();
+        }
+
+        private void parseElement(List<String> elements) {
+
+            String process;
+            xml = XML.root();
+            for (int i = 0; i < elements.size(); i++) {
+                process = parser.extractName(elements.get(i));
+
+                if (parser.isParent(elements.get(i))) {
+                    if (process.startsWith("/")) {
+                        xml.goUp();
+                        executionStack.pop();
+                        continue;
+                    } else {
+                        printContainer(elements.get(i), process);
+                    }
+                } else {//\"(?=})|(,|}(?!,))|{(?=\")
+
+                    printElement(elements.get(i), process);
+                }
+
+            }
+
+            //    System.out.println("yay");
+
+            xml.getChildren().forEach(XML::generate);
+            List<PseudoElement> requests = XML.getRequests();
+            executionStack.clear();
+
+            //requests.forEach(System.out::println);
+
+            builder.start();
+            for (PseudoElement request : requests) {
+                if (request.isGoUp()) {
+                    boolean hasAttributes;
+                    if (request.getAttributes() != null) {
+                        if (request.getAttributes().size() == 0) {
+                            hasAttributes = false;
+                        } else {
+                            hasAttributes = true;
+                        }
+                    } else {
+                        hasAttributes = false;
+                    }
+
+
+                    builder.createEnd(request.isArray(), executionStack.size(), request.isArray());
+                    executionStack.pop();
+                } else if (request.isParent()) {
+                    builder.createContainer(request.getName(),
+                            request.getAttributes().size() > 0,
+                            request.getAttributes(),
+                            executionStack.size(),
+                            request.isArrayElement(),
+                            request.isArray());
+                    executionStack.push(request.getName());
+                } else {
+                    builder.createSingleElement(request.getName(),
+                            request.getValue(),
+                            request.getAttributes(),
+                            request.isArrayElement(),
+                            executionStack.size());
+                }
+            }
+
+            builder.end();
+
+            builder.printResults();
+        }
+
+        private List<String> beautifyContent(String content) {
+            content = content.replaceFirst("<\\?.+?\\?>\\n?", "");
+            content = content.replaceAll(">(?![@-~!-;=])", ">\n");
+            String[] lines = content.split("\n");
+
+            for (int i = 0; i < lines.length; i++) {
+                lines[i] = lines[i].replaceFirst(" *(?=<)", "") + "\n";
+            }
+
+            for (int i = 0; i < lines.length - 1; i++) {
+
+
+                if (parser.extractName(lines[i]).equals(
+                        lines[i+1].trim().substring(2, lines[i+1].trim().length() - 1))) {
+                    lines[i] = lines[i].substring(0, lines[i].length() - 1);
+                }
+
+                if (!lines[i].endsWith("\n")) {
+                    lines[i] = lines[i].concat("\n");
+                }
+            }
+
+            StringBuilder builder = new StringBuilder();
+
+            for (String line : lines) {
+                builder.append(line);
+            }
+
+            List<String> finalList = new ArrayList<>();
+            Collections.addAll(finalList, builder.toString().split("\n"));
+
+
+            return finalList;
+        }
+
+        public JSONDirector(String content) {
+            content = content.replaceAll("\\r\\n|\\r|\\n|\\t", "");
+            this.content = beautifyContent(content);
+        }
+
+        public void startConversion() {
+            parseElement(content);
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/PseudoElement.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.Map;
+
+    public class PseudoElement {
+        private boolean isParent;
+        private Map<String, String> attributes;
+        private String name;
+        private String value;
+        private boolean goUp = false;
+        private boolean isLast = false;
+        private boolean isArray = false;
+        private boolean isArrayElement = false;
+
+        public static PseudoElement goUpRequest() {
+            PseudoElement element = new PseudoElement();
+            element.goUp = true;
+            return element;
+        }
+
+        public static PseudoElement container(String name,
+                                              Map<String, String> attributes,
+                                              boolean hasContainers) {
+            PseudoElement element = new PseudoElement();
+            element.name = name;
+            element.attributes = attributes;
+            element.isParent = true;
+            return element;
+        }
+
+        public static PseudoElement element(String name, String value,
+                                            Map<String, String> attributes) {
+            PseudoElement element = new PseudoElement();
+            if (value != null) {
+                value = value.replaceAll(",", "");
+            }
+            element.name = name;
+            element.value = value;
+            element.attributes = attributes;
+            element.isParent = false;
+
+            return element;
+        }
+
+        public PseudoElement setChild(boolean isLast) {
+            this.isLast = isLast;
+            return this;
+        }
+
+        public boolean isLast() {
+            return isLast;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Map<String, String> getAttributes() {
+            return attributes;
+        }
+
+
+        public boolean isParent() {
+            return isParent;
+        }
+
+        public boolean isGoUp() {
+            return goUp;
+        }
+
+        public PseudoElement setArray(boolean isArray) {
+            this.isArray = isArray;
+            return this;
+        }
+
+        public PseudoElement setArrayElement(boolean isArrayElement) {
+            this.isArrayElement = isArrayElement;
+            return this;
+        }
+
+        public boolean isArray() {
+            return isArray;
+        }
+
+        public boolean isArrayElement() {
+            return isArrayElement;
+        }
+
+        @Override
+        public String toString() {
+            return "PseudoElement{" +
+                    "isParent=" + isParent +
+                    ", attributes=" + attributes +
+                    ", name='" + name + '\'' +
+                    ", value='" + value + '\'' +
+                    ", goUp=" + goUp +
+                    ", isLast=" + isLast +
+                    ", isArray=" + isArray +
+                    ", isArrayElement=" + isArrayElement +
+                    '}';
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/Converter.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.io.IOException;
+    import java.nio.charset.StandardCharsets;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.nio.file.Paths;
+
+    public class Converter {
+        private String content;
+
+        private void parseXML() {
+            JSONDirector director = new JSONDirector(content);
+            director.startConversion();
+        }
+
+        private void parseJSON() {
+            XMLDirector director = new XMLDirector(content);
+            director.startConversion();
+        }
+
+        public void start() {
+            try {
+                Path path = Paths.get("test.txt");
+                //Path path = Paths.get("C:\\Users\\eneye\\Documents\\Abdulmumin\\test.txt");
+                content = Files
+                        .readString(path, StandardCharsets.UTF_8)
+                        .trim();
+                //System.out.println(content);
+                long c = System.currentTimeMillis();
+                if (content.startsWith("<")) {
+                    parseXML();
+                } else {
+                    parseJSON();
+                }
+                long d = System.currentTimeMillis() - c;
+            } catch (IOException e) {
+                System.out.println("Error while reading file occurred.");
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/XMLParser.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class XMLParser {
+        private Pattern pattern;
+        private Matcher matcher;
+
+        //Is safe to use on nested elements
+        public String extractName(String element) {
+            pattern = Pattern.compile("(?<=<).+?(?=\\s|/|>)");
+            matcher = pattern.matcher(element);
+            if (matcher.find()) {
+                String content = matcher.group();
+
+                if (content.endsWith("/")) {
+                    return content.substring(0, content.length() - 1);
+                } else {
+                    return content;
+                }
+            }
+
+            return "null";
+        }
+
+        public String parseAttributes(String element) {
+            String content = element.replaceFirst("<.+?\\s", "");
+            pattern = Pattern.compile(".+?(?=/>|>)");
+            matcher = pattern.matcher(content);
+
+            if (matcher.find()) {
+                return matcher.group().trim();
+            }
+
+            return "null";
+        }
+
+        public String getContent(String element, String name) {
+
+            String originalPattern = String.format("(?<=>).*(?=</%s>)", name);
+            pattern = Pattern.compile(originalPattern);
+            matcher = pattern.matcher(element);
+
+
+            if (matcher.find()) {
+                return matcher.group().replaceAll("</.+?>", "");
+            } else {
+                return null;
+            }
+        }
+
+        public boolean isParent(String line) {
+            if (line.contains("/>")) {
+                return false;
+            }
+
+            long count = line.chars().filter(ch -> ch == '<').count();
+            return count == 1;
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/JSONBuilder.java
+  visible: true
+  text: |-
+    package converter.presentation;
+
+    import java.util.ArrayList;
+    import java.util.LinkedHashMap;
+    import java.util.List;
+    import java.util.Map;
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class JSONBuilder {
+        private StringBuilder builder = new StringBuilder();
+        private int numberOfBraces = 0;
+
+        public Map<String, String> listOfAttributes(String attributes) {
+            attributes = attributes.replaceAll("'", "\"");
+
+            Pattern pattern = Pattern.compile(".+?\\s*=\\s*\".*?\"");
+            Matcher matcher = pattern.matcher(attributes);
+
+            List<String> attrList = new ArrayList<>();
+            while (matcher.find()) {
+                attrList.add(matcher.group().trim());
+            }
+            //  System.out.println(attrList);
+            Map<String, String> attrMap = new LinkedHashMap<>();
+            String[] attr;
+
+            for (String attribute : attrList) {
+                attr = attribute.split("\\s*=\\s*");
+
+                attrMap.put(attr[0], attr[1]);
+            }
+
+            return attrMap;
+        }
+
+        public void start() {
+            builder.append("{\n");
+        }
+
+
+        public void end() {
+            if (builder.toString().endsWith(",\n")) {
+                builder.setLength(builder.length() - 2);
+
+                if (builder.toString().endsWith(",\n")) {
+                    builder.setLength(builder.length() - 2);
+                    builder.append("\n");
+                }
+            }
+
+            builder.append("}");
+        }
+
+        public void createSingleElement(String name, String value,
+                                        Map<String, String> attributes,
+                                        boolean isParentArray, int depth) {
+
+           /* if (builder.toString().endsWith(",\n")) {
+                builder.setLength(builder.length() - 2);
+                builder.append("\n");
+            }*/
+
+            builder.append("    ".repeat(Math.max(0, depth + 1)));
+            //  System.out.println(isParentArray);
+            if (!isParentArray) {
+                builder.append("\"");
+                builder.append(name);
+                builder.append("\": ");
+            }
+
+            if (attributes.size() > 0) {
+                builder.append("{\n");
+                attributes.forEach((key, val) -> {
+                    builder.append("    ".repeat(Math.max(0, depth + 2)));
+                    builder.append("\"@");
+                    builder.append(key);
+                    builder.append("\": \"");
+                    if (val.startsWith("\"")) {
+                        builder.append(val.substring(1));
+                    } else {
+                        builder.append(val);
+                    }
+                    builder.append(",");
+                    builder.append("\n");
+                });
+
+                builder.append("    ".repeat(Math.max(0, depth + 2)));
+                builder.append("\"#");
+                builder.append(name);
+                builder.append("\": ");
+                if (value != null) {
+                    if (value.equals("null")) {
+                        builder.append(value);
+                    } else {
+                        if (!value.startsWith("\"") && !value.startsWith("\"")) {
+                            value = "\"" + value;
+                        }
+                        builder.append(value);
+                        builder.append("\"");
+                    }
+                } else {
+                    builder.append("null");
+                }
+
+                builder.append("\n");
+                builder.append("    ".repeat(Math.max(0, depth + 1)));
+                builder.append("}");
+                //  if (!isLastChild) {
+                //      builder.append(",");
+                //  }
+
+            } else {
+                if (value != null) {
+                    if (value.equals("null")) {
+                        builder.append(value);
+                    } else {
+                        builder.append("\"");
+                        builder.append(value);
+                        builder.append("\"");
+                    }
+                } else {
+                    builder.append("null");
+                }
+
+                //  if (!isLastChild) {
+                builder.append("");
+                //}
+            }
+
+            builder.append(",");
+            builder.append("\n");
+        }
+
+        public void createContainer(String name, boolean valid,
+                                    Map<String, String> attributes,
+                                    int depth, boolean isParentArray,
+                                    boolean isArray) {
+            boolean hasAttributes = false;
+
+            builder.append("    ".repeat(Math.max(0, depth + 1)));
+
+            if (!isParentArray) {
+                builder.append("\"");
+                builder.append(name);
+                builder.append("\": ");
+            }
+
+            if (isArray && attributes.size() == 0) {
+                builder.append("[\n");
+            } else {
+                builder.append("{\n");
+            }
+
+
+            if (attributes.size() > 0) {
+                hasAttributes = true;
+                attributes.forEach((key, val) -> {
+                    builder.append("    ".repeat(Math.max(0, depth + 1)));
+                    builder.append("\"@");
+                    builder.append(key);
+                    builder.append("\": \"");
+                    if (val.startsWith("\"")) {
+                        builder.append(val.substring(1));
+                    } else {
+                        builder.append(val);
+                    }
+                    builder.append(",\n");
+                });
+
+                builder.setLength(builder.length() - 1);
+                builder.append("\n");
+            }
+
+            if (valid) {
+                if (hasAttributes) {
+                    numberOfBraces++;
+                }
+
+                builder.append("    ".repeat(Math.max(0, depth + 1)));
+                builder.append("\"#");
+                builder.append(name);
+                if (isArray) {
+                    builder.append("\": [\n");
+                } else {
+                    builder.append("\": {\n");
+                }
+            } else if (!hasAttributes) {
+                //System.out.println(name);
+            }
+        }
+
+        public void createEnd(boolean isArray, int depth, boolean isArrayElement) {
+            if (builder.toString().endsWith(",\n")) {
+                builder.setLength(builder.length() - 2);
+                builder.append("\n");
+            }
+            // builder.setLength(builder.length() - 2);
+            //builder.append("\n");
+            builder.append("    ".repeat(Math.max(0, depth)));
+
+
+            builder.append("    ".repeat(Math.max(0, depth)));
+            if (isArray) {
+                builder.append("]");
+            } else {
+                builder.append("}");
+            }
+
+            if (numberOfBraces > 0) {
+                while (numberOfBraces != 0) {
+                    builder.append("}\n");
+                    numberOfBraces--;
+                }
+            }
+            //System.out.println(isLastChild);
+            //if (!isLastChild) {
+            //   builder.append(",");
+            //}
+            builder.append(",");
+            builder.append("\n");
+        }
+
+        public void printResults() {
+            System.out.println(builder.toString().trim());
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/UserInput.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.*;
+
+    public class UserInput {
+        private final Scanner scanner;
+
+        public UserInput() {
+            this.scanner = new Scanner(System.in);
+        }
+
+        public void run(String input) {
+            //String input = scanner.nextLine();
+            char c = input.charAt(0);
+            switch (c) {
+                case '<':
+
+                    if(input.contains("=")){
+                        //convertToJSON2(input);
+                    } else {
+                        //convertToJSON(input);
+                    }
+
+                    nestingConverter(input);
+
+                    break;
+                case '{':
+                    if (input.contains("#")) {
+                        //convertToXML2(input);
+                    } else {
+                        //convertToXML(input);
+                    }
+
+                    nestingConverterXML(input);
+                    break;
+                default:
+            }
+        }
+
+        public void nestingConverterXML(String json){
+            //System.out.println(json);
+            Deque<String> t = addToStack(json);
+            processJSON(t);
+        }
+
+        public void processJSON(Deque<String> tokens) {
+            List<String> paths = new ArrayList<>();
+            int i = 0;
+            while(true) {
+                String firstString = tokens.peekFirst();
+                String lastString = tokens.peekLast();
+                String path = "", value = "";
+                if (firstString.equalsIgnoreCase("{") && lastString.equalsIgnoreCase("}")) {
+                    tokens.removeLast();
+                    tokens.removeFirst();
+                } else {
+                    String currentString = tokens.poll().replace("\\+", "");
+                    String[] line = currentString.split(":");
+
+                    if (line.length == 2) {
+                        String line1 = line[0].strip().replace("\"", "");
+                        String line2 = line[1].strip().replace("\\+", "");
+                        //System.out.printf("%s, %s", line1, line2);
+                        if(line2.equals("{")){
+                            System.out.println("Element:");
+                            if(!paths.contains(line1)){
+                                paths.add(line1);
+                                path = line1;
+                            }
+                            printPaths(paths, "");
+                            boolean status = false;
+                            String nextString = tokens.peek().replace("\\+", "");
+
+                            Map<String, String> attr = new HashMap<>();
+                            boolean same = false;
+                            boolean dontPrint = false;
+
+                            while(nextString.contains("@") || nextString.contains("#")) {
+                                currentString = tokens.poll().replace("\\+", "");
+                                line = currentString.split(":");
+                                line1 = line[0].strip().replace("\"", "");
+                                line2 = line[1].strip().replace("\\+", "").replace("\"", "");
+                                if (line1.contains("@")) {
+                                    String key = line1.replace("@","").replace("\"","");
+                                    value = line2.replace("\"","").replace(",","");
+                                    if(key.length()>1 && !value.equalsIgnoreCase("{")){
+                                        //printAttributesJSON(key, value);
+                                        attr.put(key, value);
+                                    } else {
+                                        dontPrint = true;
+                                    }
+
+                                } else {
+                                    String key = line1.replace("#","").replace("\"","");
+                                    value = line2.replace("\"","").replace(",","");
+                                    //printValue(value);
+                                    if(path.equalsIgnoreCase(key)){
+                                        same=true;
+                                    }
+                                }
+                                nextString = tokens.peek().replace("\\+", "");
+                                status = true;
+                            }
+                            if(same){
+                                if(!dontPrint){
+                                    if ("null".equalsIgnoreCase(value)) {
+                                        printValue(null);
+                                    } else if (value.contains("{") && value.contains("}")){
+                                        printValue("");
+                                    } else {
+                                        printValue(value);
+                                    }
+                                }
+
+                                for (Map.Entry<String, String> it: attr.entrySet()) {
+                                    printAttributesJSON(it.getKey(),it.getValue());
+                                }
+                            }
+                            System.out.println();
+                            if(status){
+                                paths.remove(path);
+                            }
+
+                        } else {
+                            path = line1.replace("\"", "");
+                            value = line2.replace("\"", "").replace(",", "");
+                            System.out.println("Element:");
+                            printPaths(paths, path);
+                            if ("null".equalsIgnoreCase(value)) {
+                                printValue(null);
+                            } else if (value.contains("{") && value.contains("}")){
+                                printValue("");
+                            } else {
+                                printValue(value);
+                            }
+
+
+
+                            System.out.println();
+                        }
+                    } else {
+
+                    }
+
+                }
+
+                if (i++ == 53){
+                    break;
+                }
+
+            }
+            //tokens.stream().forEach(System.out::println);
+        }
+
+        public void processJSON11(Deque<String> tokens) {
+
+            //tokens.stream().forEach(System.out::println);
+            List<String> paths = new ArrayList<>();
+            int i = 0;
+            while(true) {
+                //if (!tokens.isEmpty()) {
+                //System.out.println("working");
+                String firstString = tokens.peekFirst();
+                String lastString = tokens.peekLast();
+                String path = "", value = "";
+                if (firstString.equalsIgnoreCase("{") && lastString.equalsIgnoreCase("}")) {
+                    tokens.removeLast();
+                    tokens.removeFirst();
+                    //processJSON(tokens);
+                } else {
+                    String currentString = tokens.poll().replace("\\+", "");
+                    String[] line = currentString.split(":");
+
+                    if (line.length == 2) {
+                        String line1 = line[0].strip();
+                        String line2 = line[1].strip().replace("\\+", "");
+                        if (!line1.contains("#") && !line1.contains("@") && line2.equalsIgnoreCase("{")) {
+                            path = line1.replace("\"", "");
+                            if(!paths.contains(path)){
+                                paths.add(path);
+                            }
+                            String nextString = tokens.peek().replace("\\+", "");
+                            if(nextString.contains("@")){
+                                processJSON(tokens);
+                            } else {
+
+                            }
+                            System.out.println("Element:");
+                            printPaths(paths, "");
+
+                            System.out.println();
+                        } else if (line1.contains("#") || line1.contains("@")){
+                            if (line1.contains("@")) {
+                                String key = line1.replace("@","").replace("\"","");
+                                value = line2.replace("\"","").replace(",","");
+                                printAttributesJSON(key, value);
+                            } else {
+                                value = line2.replace("\"","").replace(",","");
+                                printValue(value);
+                            }
+                        } else {
+                            path = line1.replace("\"","");
+                            value = line2.replace("\"","").replace(",","");
+                            if(!paths.contains(path)){
+                                paths.add(path);
+                            }
+                            System.out.println("Element:");
+                            printPaths(paths, "");
+                            printValue(value);
+                            System.out.println();
+
+
+                        }
+
+                    } else {
+                        if(currentString.equalsIgnoreCase("},")){
+                            //System.out.println(currentString);
+                        }
+
+                    }
+                    //processJSON(tokens);
+                }
+
+                if (i++ == 5){
+                    break;
+                }
+
+            }
+            //tokens.stream().forEach(System.out::println);
+        }
+
+        public void nestingConverter(String xml){
+            //System.out.println(xml);
+            Deque<String> t = addToStack(xml);
+            processXML(t);
+        }
+
+        public void processXML(Deque<String> tokens) {
+            //System.out.println("#*#*#*#*#*#*#*####*#*#*#*#*#");
+            //tokens.stream().forEach(System.out::println);
+            List<String> paths = new ArrayList<>();
+            int i = 0;
+            while(true) {
+
+                String firstString = tokens.peekFirst().replace("<","").replace(">","");
+                String lastString = tokens.peekLast().replace("</","").replace(">","");
+                String path = "", value = "";
+                if (firstString.equalsIgnoreCase(lastString)) {
+                    tokens.removeLast();
+                    tokens.removeFirst();
+                    System.out.println("Element:");
+                    path = firstString;
+
+                    if(!paths.contains(path)){
+                        paths.add(path);
+                    }
+
+                    printPaths(paths, "");
+                    System.out.println();
+                } else {
+                    String currentString = tokens.poll();
+
+                    if (currentString.contains("</")) {
+                        System.out.println("Element:");
+                        String[] s = currentString.split(">");
+                        String[] s2 = s[1].split("</");
+
+                        if (s2.length == 2) {
+                            value = s2[0];
+                            path = s2[1];
+                        }
+                        if (value.isEmpty()){
+                            //value = "\"\"";
+                        }
+
+                        //System.out.println(currentString);
+                        /*if (s[0].contains("=")){
+                            String[] s3 = s[0].split(" ");
+                            for(int j = 1; j < s3.length; j++){
+                                System.out.println(s3[j]);
+                            }
+                        }*/
+
+                        printPaths(paths, path);
+                        //System.out.println(path);
+                        printValue(value);
+                        if (s[0].contains("=")){
+                            printAttributes(s[0]);
+                        }
+                        System.out.println();
+                    } else if (currentString.contains("/>")){
+                        System.out.println("Element:");
+                        String s = currentString.replace("/>", "").replace("<","").strip();
+
+                        //value = null;
+                        if (s.contains("=")){
+                            String[] s2 = s.split(" ");
+                            path = s2[0].strip();
+                        }else{
+                            path = s;
+                        }
+                        //System.out.println(currentString);
+                        //System.out.println(path);
+                        printPaths(paths, path);
+                        printValue(null);
+                        if (s.contains("=")){
+                            printAttributes(s);
+                        }
+                        System.out.println();
+                    }
+                }
+
+                if (i++ == 14){
+                    break;
+                }
+
+            }
+            //tokens.stream().forEach(System.out::println);
+        }
+
+        public void printValue(String v){
+            System.out.print("value = ");
+            if(v == null){
+                System.out.println(v);
+            }else{
+                System.out.println("\""+v+"\"");
+            }
+        }
+
+        public void printAttributes(String s){
+            String[] s3 = s.split(" ");
+
+            if(s3.length>0){
+                System.out.println("attributes:");
+                for(int j = 1; j < s3.length; j++){
+                    System.out.println(s3[j]);
+                }
+            }
+        }
+
+        public void printAttributesJSON(String k, String v){
+            System.out.println("attributes:");
+            System.out.println(k+"=\""+v+"\"");
+
+        }
+
+        public void printPaths(List<String> list, String p){
+            System.out.print("path = ");
+            String s = "";
+            Set<String> l = Set.of();
+            //ArrayList<String> list = new ArrayList<>(l);
+            for(int i = 0; i < list.size(); i++) {
+                if (i == list.size()-1){
+                    s += list.get(i);
+                }else{
+                    s += list.get(i) + ", ";
+                }
+            }
+            if(p.isEmpty()){
+                System.out.println(s);
+            }else{
+                System.out.println(s+", "+p);
+            }
+
+        }
+
+        public Deque<String> addToStack(String xml){
+            Deque<String> tokens = new LinkedList<>();
+            String ls = System.getProperty("line.separator");
+            String[] lines = xml.split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                tokens.add(lines[i].strip());
+            }
+            return tokens;
+        }
+
+        public void convertToXML(String json) {
+            String openingTag = "<";
+            String openingClosingTag = "</";
+            String selfClosingTag = "/>";
+            String closingTag = ">";
+            String[] a = json.split(":");
+            if (a.length == 2) {
+                String b = a[0].replace('{', ' ');
+                b = b.replace('"', ' ');
+                b = b.strip();
+
+
+                String c = a[1].replace('}', ' ');
+                c = c.replace('"', ' ');
+                c = c.strip();
+
+
+                if (c.equalsIgnoreCase("null")) {
+                    openingTag += b;
+                    openingTag += selfClosingTag;
+                    System.out.println(openingTag);
+                } else {
+                    openingTag += b;
+                    openingTag += closingTag;
+                    openingClosingTag += b;
+                    openingClosingTag += closingTag;
+                    openingTag += c + openingClosingTag;
+                    System.out.println(openingTag);
+                }
+
+
+
+
+            }
+
+        }
+
+        public void convertToXML2(String json) {
+            if(json.contains("null")) {
+                xml1(json);
+            } else {
+                xml2(json);
+            }
+        }
+
+        public void xml1(String json) {
+            String openingTag = "<";
+            String openingClosingTag = "</";
+            String selfClosingTag = "/>";
+            String closingTag = ">";
+            String[] a = json.split(":");
+            String xml = "<";
+
+            Queue<String> tokens = new LinkedList<>();
+
+            //Arrays.stream(a).forEach(System.out::println);
+            //Arrays.stream(d).forEachOrdered(t -> tokens.add(t));
+            for (int i = 0; i< a.length; i++) {
+                if(a[i].contains(",")){
+                    String[] s = a[i].split(",");
+                    for (int j = 0; j< s.length; j++) {
+                        tokens.add(s[j]);
+                    }
+                } else {
+                    tokens.add(a[i]);
+                }
+            }
+            //tokens.stream().forEach(System.out::println);
+
+            String key = null;
+            String value = null;
+            String obj = null;
+            boolean exit = false;
+            while(true){
+
+                String s = tokens.poll();
+
+                if (s == null) {
+                    break;
+                }
+                if (s.contains("{") && !s.contains("@")){
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    obj = s;
+                    xml +=  s + " ";
+                } else if(s.contains("\"@")) {
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    s = s.replace('@', ' ');
+                    s = s.strip();
+                    key = s;
+                    value = tokens.poll();
+                    value = value.replace('"', ' ');
+                    value = value.strip();
+                    xml += key + " = \"" + value + "\" ";
+                } else if (s.contains("\"#")){
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    s = s.replace('#', ' ');
+                    s = s.strip();
+
+                    value = tokens.poll();
+                    value = value.replace('"', ' ');
+                    value = value.strip();
+                    value = value.replace('}', ' ');
+                    value = value.strip();
+                    //xml += ">"+value+"</"+obj+">";
+                    xml += "/>";
+                    exit = true;
+                } else {
+                    key = s;
+                }
+
+                if(exit){
+                    break;
+                }
+
+            }
+            System.out.println(xml);
+        }
+
+        public void xml2(String json) {
+            String openingTag = "<";
+            String openingClosingTag = "</";
+            String selfClosingTag = "/>";
+            String closingTag = ">";
+            String[] a = json.split(":");
+            String xml = "<";
+
+            Queue<String> tokens = new LinkedList<>();
+
+            //Arrays.stream(a).forEach(System.out::println);
+            //Arrays.stream(d).forEachOrdered(t -> tokens.add(t));
+            for (int i = 0; i< a.length; i++) {
+                if(a[i].contains(",")){
+                    String[] s = a[i].split(",");
+                    for (int j = 0; j< s.length; j++) {
+                        tokens.add(s[j]);
+                    }
+                } else {
+                    tokens.add(a[i]);
+                }
+            }
+            //tokens.stream().forEach(System.out::println);
+
+            String key = null;
+            String value = null;
+            String obj = null;
+            boolean exit = false;
+            while(true){
+
+                String s = tokens.poll();
+
+                if (s == null) {
+                    break;
+                }
+                if (s.contains("{") && !s.contains("@")){
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    obj = s;
+                    xml +=  s + " ";
+                } else if(s.contains("\"@")) {
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    s = s.replace('@', ' ');
+                    s = s.strip();
+                    key = s;
+                    value = tokens.poll();
+                    value = value.replace('"', ' ');
+                    value = value.strip();
+                    xml += key + " = \"" + value + "\" ";
+                } else if (s.contains("\"#")){
+                    s = s.replace('{', ' ');
+                    s = s.strip();
+                    s = s.replace('"', ' ');
+                    s = s.strip();
+                    s = s.replace('#', ' ');
+                    s = s.strip();
+
+                    value = tokens.poll();
+                    value = value.replace('"', ' ');
+                    value = value.strip();
+                    value = value.replace('}', ' ');
+                    value = value.strip();
+                    xml += ">"+value+"</"+obj+">";
+                    exit = true;
+                } else {
+                    key = s;
+                }
+
+                if(exit){
+                    break;
+                }
+
+            }
+            System.out.println(xml);
+        }
+
+        public void convertToJSON(String xml) {
+            String openingBraces = "{";
+            String semiColon = ":";
+            String nullValue = " null";
+            String closingBraces = "}";
+            String quotes = "\"";
+            String[] a = xml.split(">");
+            String key = null;
+            String value = null;
+            if(a.length == 2) {
+
+                String[] a2 = a[1].split("</");
+                if (a2.length == 2) {
+                    value = a2[0];
+                    key = a2[1];
+                }
+
+                openingBraces += quotes + key + quotes + semiColon;
+                openingBraces += quotes + value + quotes + closingBraces;
+                System.out.println(openingBraces);
+            } else if (a.length == 1) {
+
+                String s = a[0].replace('<', ' ');
+                s = s.replace('/', ' ');
+                s = s.strip();
+                openingBraces += quotes + s + quotes + semiColon;
+                openingBraces += nullValue + closingBraces;
+                System.out.println(openingBraces);
+            }
+        }
+
+        public void convertToJSON2(String xml) {
+           if(xml.contains("</")) {
+                json2(xml);
+           } else {
+               json1(xml);
+           }
+        }
+        public void json2(String xml) {
+            String[] a = xml.split(">");
+            String[] d = a[0].split(" ");
+
+            String json = "{";
+
+            Queue<String> tokens = new LinkedList<>();
+
+            //Arrays.stream(d).forEach(System.out::println);
+            //Arrays.stream(d).forEachOrdered(t -> tokens.add(t));
+            for (int i = 0; i< d.length; i++) {
+                tokens.add(d[i]);
+            }
+            tokens.add(a[1]);
+            //tokens.stream().forEach(System.out::println);
+            String key = null;
+            String value = null;
+            String obj = null;
+            boolean exit = false;
+            while(true){
+
+                String s = tokens.poll();
+
+                if (s == null) {
+                    break;
+                }
+                if (s.contains("<") && !s.contains("</")){
+                    s = s.replace('<', ' ');
+                    s = s.strip();
+                    obj = s;
+                    json += "\"" + s + "\":{";
+                } else if(s.equals("=")) {
+                    value = tokens.poll();
+                    json += "\"@" + key + "\":" + value + ",";
+                } else if (s.contains("\">")){
+
+                }else if (s.contains("\"")){
+
+                }else if (s.contains("</")){
+                    exit = true;
+                    String[] c = s.split("</");
+                    json += "\"#" + obj + "\":\"" + c[0]+"\"}}";
+                }else if (s.contains("/>")) {
+                    exit = true;
+                    json += "\"#" + obj + "\":" + "null}}";
+                } else {
+                    key = s;
+                }
+
+                if(exit){
+                    break;
+                }
+
+            }
+            System.out.println(json);
+        }
+
+        public void json1(String xml) {
+            String[] a = xml.split("<");
+            String[] b = xml.split("/>");
+            String[] c = xml.split("=");
+            String[] d = xml.split(" ");
+
+            String openingBraces = "{";
+            String semiColon = ":";
+            String nullValue = " null";
+            String closingBraces = "}";
+            String quotes = "\"";
+            String json = "{";
+
+            Queue<String> tokens = new LinkedList<>();
+
+            //Arrays.stream(d).forEach(System.out::println);
+            //Arrays.stream(d).forEachOrdered(t -> tokens.add(t));
+            for (int i = 0; i< d.length; i++) {
+                tokens.add(d[i]);
+            }
+            String key = null;
+            String value = null;
+            String obj = null;
+            boolean exit = false;
+            while(true){
+
+                String s = tokens.poll();
+
+                if (s == null) {
+                    break;
+                }
+                if (s.contains("<")){
+                    s = s.replace('<', ' ');
+                    s = s.strip();
+                    obj = s;
+                    json += "\"" + s + "\":{";
+                } else if(s.equals("=")) {
+                    value = tokens.poll();
+                    json += "\"@" + key + "\":" + value + ",";
+                } else if (s.contains("\">")){
+
+                }else if (s.contains("\"")){
+
+                }else if (s.contains("</")){
+                    exit = true;
+                }else if (s.contains("/>")) {
+                    exit = true;
+                    json += "\"#" + obj + "\":" + "null}}";
+                } else {
+                    key = s;
+                }
+
+                if(exit){
+                    break;
+                }
+
+            }
+            System.out.println(json);
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/Pair.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    public class Pair<F, S> {
+        private F first;
+        private S second;
+
+        public Pair(F first, S second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public Pair() {}
+
+        public F getFirst() {
+            return first;
+        }
+
+        public S getSecond() {
+            return second;
+        }
+
+        public void setFirst(F first) {
+            this.first = first;
+        }
+
+        public void setSecond(S second) {
+            this.second = second;
+        }
+
+        @Override  //TESTING ONLY
+        public String toString() {
+            return "Pair + < " + first + ", " + second + " >";
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/JSONParser.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.logging.Logger;
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class JSONParser {
+        private Pattern pattern;
+        private Matcher matcher;
+        private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+        public Pair<String, String> extractObject(String element) {
+            Pair<String, String> pair = new Pair<>();
+            pattern = Pattern.compile("(?<=\\{).+(?=})");
+            matcher = pattern.matcher(element);
+
+            if (matcher.find()) {
+                pair.setSecond(matcher.group());
+            } else {
+                pair.setSecond("null");
+            }
+
+            pattern = Pattern.compile("\".+?\"");
+            matcher = pattern.matcher(element);
+
+            if (matcher.find()) {
+                pair.setFirst(matcher.group()
+                        .substring(1, matcher.group().length() - 1));
+            }
+            return pair;
+        }
+
+        public String extractName(String element) {
+            pattern = Pattern.compile("(?<=\").+?(?=\")");
+            matcher = pattern.matcher(element);
+
+            if (matcher.find()) {
+                return matcher.group();
+            }
+            return "";
+        }
+
+        public Pair<String, String> extractAttribute(String element) {
+            String[] attrArray = element.split("\"\\s*:\\s*\"?");
+            Pair<String, String> attr = new Pair<>();
+            attr.setFirst(attrArray[0].substring(1));
+
+
+            String value = attrArray[1];
+            if (value.endsWith("\",")) {
+                value = value.substring(0, value.length() - 2);
+
+            } else if (value.endsWith("\"")) {
+                value = value.substring(0, value.length() - 1);
+
+            } else if (value.endsWith(",")) {
+                value = value.substring(0, value.length() - 1);
+
+            }
+
+            attr.setSecond(value);
+
+            return attr;
+        }
+
+        public String getValue(String element) {
+            String[] values = element.split("\"\\s*:\\s*");
+            return values[1];
+        }
+
+        public String[] getElement(String element) {
+            String[] elem =  element.split("(?<=\")\\s*:\\s*");
+
+            if (elem[1].matches("\\s*?\\{\\s*?}\\s*,?")) {
+                elem[1] = "\"\"";
+            }
+
+            if (elem[0].startsWith("\"")) {
+                elem[0] = elem[0].substring(1, elem[0].length() - 1);
+            }
+
+            if (!elem[1].startsWith("\"")) {
+                elem[1] = "\"" + elem[1] + "\"";
+            }
+
+            if (elem[1].startsWith("\"")) {
+                elem[1] = elem[1].substring(1);
+            }
+
+            if (elem[1].endsWith(",\"")) {
+                elem[1] = elem[1].substring(0, elem[1].length() - 1);
+            }
+
+            if (elem[1].endsWith("\"")) {
+                elem[1] = elem[1].substring(0, elem[1].length() - 1);
+            }
+
+
+            return elem;
+        }
+    }
+  learner_created: true
+- name: src/converter/presentation/XMLBuilder.java
+  visible: true
+  text: |
+    package converter.presentation;
+
+    import java.util.List;
+    import java.util.Map;
+    import java.util.Stack;
+
+    public class XMLBuilder {
+        private StringBuilder xmlBuilder = new StringBuilder();
+
+        private JSON json;
+        public void createContainer(Stack<String> path, String name) {
+            json.addChild(name, true);
+        }
+        public void goUp() {
+            json.goUp();
+        }
+
+        public void print() {
+            if (json.getChildren().size() > 1) {
+                json.print();
+            } else {
+                json.getChildren().forEach(JSON::print);
+            }
+        }
+
+        public void addAttribute(String key, String value) {
+            if (value.equals("null")) {
+                value = "";
+            }
+
+            if (key.length() == 0 || key.equals("@")) {
+                json.stripAttributes();
+            } else {
+                json.addAttribute(key, value);
+            }
+        }
+
+        public XMLBuilder(boolean create) {
+            if (create) {
+                json = JSON.root();
+            }
+        }
+
+        public List<PseudoElement> result() {
+            return JSON.getRequests();
+        }
+
+        public void setValue(String value) {
+            json.setValue(value, true);
+        }
+
+        public void createSingleElement(String name, String value, Stack<String> path) {
+            if (name.length() == 0 || name.equals("#"))  {
+                json.stripAttributes();
+            } else {
+                json.addChild(name, true);
+                json.setValue(value, true);
+                json.goUp();
+            }
+        }
+
+        public void stripAttributes() {
+            json.stripAttributes();
+        }
+
+
+        public void addContainer(String name, Map<String, String> attributes,
+                                 int depth) {
+            xmlBuilder.append("    ".repeat(Math.max(0, depth)));
+            xmlBuilder.append("<");
+            xmlBuilder.append(name);
+            attributes.forEach((key, value) -> {
+                xmlBuilder.append(" ");
+                xmlBuilder.append(key);
+                xmlBuilder.append("=\"");
+                xmlBuilder.append(value);
+                xmlBuilder.append("\"");
+            });
+            xmlBuilder.append(">\n");
+        }
+
+        public void createSingleElement(String name, String value,
+                                        Map<String, String> attributes,
+                                        int depth) {
+            xmlBuilder.append("    ".repeat(Math.max(0, depth)));
+            xmlBuilder.append("<");
+            xmlBuilder.append(name);
+            attributes.forEach((key, val) -> {
+                xmlBuilder.append(" ");
+                xmlBuilder.append(key);
+                xmlBuilder.append("=\"");
+                xmlBuilder.append(val);
+                xmlBuilder.append("\"");
+            });
+            if (value == null) {
+                xmlBuilder.append(" />\n");
+            } else if (value.equals("null")) {
+                xmlBuilder.append(" />\n");
+            } else {
+                xmlBuilder.append(">");
+                xmlBuilder.append(value);
+                xmlBuilder.append("</");
+                xmlBuilder.append(name);
+                xmlBuilder.append(">\n");
+            }
+
+        }
+
+        public void createEnd(String name, int depth) {
+            xmlBuilder.append("    ".repeat(Math.max(0, depth - 1)));
+            xmlBuilder.append("</");
+            xmlBuilder.append(name);
+            xmlBuilder.append(">\n");
+        }
+
+        public void getResult() {
+            System.out.println(xmlBuilder.toString());
+        }
+
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5475#comment
 status: Unchecked
 record: -1

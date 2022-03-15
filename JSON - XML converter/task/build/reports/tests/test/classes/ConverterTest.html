@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.922s</div>
+<div class="counter">1.089s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">start</td>
-<td class="success">1.922s</td>
+<td class="success">1.089s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -91,298 +91,243 @@
 Start test 1?[0m
 Element:
 path = transaction
-
 Element:
 path = transaction, id
 value = &quot;6753322&quot;
-
 Element:
 path = transaction, number
-value = &quot;8-900-000-00-00&quot;
+value = &quot;8-900-000-000&quot;
 attributes:
-region=&quot;Russia&quot;
-
+region = &quot;Russia&quot;
 Element:
-path = transaction, nonattr
+path = transaction, empty1
 value = null
-
 Element:
-path = transaction, nonattr
+path = transaction, empty2
 value = &quot;&quot;
-
 Element:
-path = transaction, nonattr
-value = &quot;text&quot;
-
-Element:
-path = transaction, attr
-value = null
-attributes:
-id=&quot;1&quot;
-
-Element:
-path = transaction, attr
+path = transaction, empty3
 value = &quot;&quot;
+Element:
+path = transaction, inner1
+Element:
+path = transaction, inner1, inner2
+Element:
+path = transaction, inner1, inner2, inner3
+Element:
+path = transaction, inner1, inner2, inner3, key1
+value = &quot;value1&quot;
+Element:
+path = transaction, inner1, inner2, inner3, key2
+value = &quot;value2&quot;
+Element:
+path = transaction, inner4
+Element:
+path = transaction, inner4, inner4
+value = &quot;value3&quot;
+Element:
+path = transaction, inner5
+Element:
+path = transaction, inner5, attr1
+value = &quot;123.456&quot;
+Element:
+path = transaction, inner5, inner4
+value = &quot;value4&quot;
+Element:
+path = transaction, inner6
+value = &quot;value5&quot;
 attributes:
-id=&quot;2&quot;
-
+attr2 = &quot;789.321&quot;
 Element:
-path = transaction, attr
-value = &quot;text&quot;
-attributes:
-id=&quot;3&quot;
-
+path = transaction, inner7
+value = &quot;value6&quot;
 Element:
-path = transaction, email
-
+path = transaction, inner8
 Element:
-path = transaction, email, to
-value = &quot;to_example@gmail.com&quot;
-
+path = transaction, inner8, attr3
+value = &quot;value7&quot;
 Element:
-path = transaction, email, from
-value = &quot;from_example@gmail.com&quot;
-
+path = transaction, inner9
 Element:
-path = transaction, email, subject
-value = &quot;Project discussion&quot;
-
+path = transaction, inner9, attr4
+value = &quot;value8&quot;
 Element:
-path = transaction, email, body
-value = &quot;Body message&quot;
-attributes:
-font=&quot;Verdana&quot;
-
+path = transaction, inner9, inner9
+value = &quot;value9&quot;
 Element:
-path = transaction, email, date
+path = transaction, inner9, something
+value = &quot;value10&quot;
+Element:
+path = transaction, inner10
 value = null
 attributes:
-day=&quot;12&quot;
-month=&quot;12&quot;
-year=&quot;2018&quot;
-
+attr5 = &quot;&quot;
+Element:
+path = transaction, inner11
+value = &quot;&quot;
+Element:
+path = transaction, inner12
+Element:
+path = transaction, inner12, somekey
+value = &quot;keyvalue&quot;
+Element:
+path = transaction, inner12, inner12
+value = &quot;notnull&quot;
+Element:
+path = meta
+Element:
+path = meta, version
+value = &quot;0.01&quot;
 ?[1;31m
 Start test 2?[0m
 Element:
-path = transaction
-
-Element:
-path = transaction, id
-value = &quot;6753322&quot;
-
-Element:
-path = transaction, number
-value = &quot;8-900-000-00-00&quot;
+path = root1
 attributes:
-region=&quot;Russia&quot;
-
+attr1 = &quot;val1&quot;
+attr2 = &quot;val2&quot;
 Element:
-path = transaction, nonattr
-value = null
-
+path = root1, elem1
+value = &quot;Value1&quot;
+attributes:
+attr3 = &quot;val3&quot;
+attr4 = &quot;val4&quot;
 Element:
-path = transaction, nonattr
-value = &quot;&quot;
-
+path = root1, elem2
+value = &quot;Value2&quot;
+attributes:
+attr5 = &quot;val5&quot;
+attr6 = &quot;val6&quot;
 Element:
-path = transaction, nonattr
-value = &quot;text&quot;
-
-Element:
-path = transaction, attr
+path = root2
 value = null
 attributes:
-id=&quot;1&quot;
-
+attr1 = &quot;&quot;
+attr2 = &quot;&quot;
 Element:
-path = transaction, attr
+path = root3
 value = &quot;&quot;
 attributes:
-id=&quot;2&quot;
-
+attr1 = &quot;val2&quot;
+attr2 = &quot;val1&quot;
 Element:
-path = transaction, attr
-value = &quot;text&quot;
-attributes:
-id=&quot;3&quot;
-
-Element:
-path = transaction, email
-
-Element:
-path = transaction, email, to
-value = &quot;to_example@gmail.com&quot;
-
-Element:
-path = transaction, email, from
-value = &quot;from_example@gmail.com&quot;
-
-Element:
-path = transaction, email, subject
-value = &quot;Project discussion&quot;
-
-Element:
-path = transaction, email, body
-value = &quot;Body message&quot;
-attributes:
-font=&quot;Verdana&quot;
-
-Element:
-path = transaction, email, date
-value = null
-attributes:
-day=&quot;12&quot;
-month=&quot;12&quot;
-year=&quot;2018&quot;
-
+path = root4
+value = &quot;Value4&quot;
 ?[1;31m
 Start test 3?[0m
 Element:
-path = transaction
-
-Element:
-path = transaction, id
-value = &quot;6753322&quot;
-
-Element:
-path = transaction, number
-value = &quot;8-900-000-00-00&quot;
+path = root1
 attributes:
-region=&quot;Russia&quot;
-
+attr1 = &quot;val1&quot;
+attr2 = &quot;val2&quot;
 Element:
-path = transaction, nonattr
-value = null
-
+path = root1, elem1
+value = &quot;Value1&quot;
+attributes:
+attr3 = &quot;val3&quot;
+attr4 = &quot;val4&quot;
 Element:
-path = transaction, nonattr
-value = &quot;&quot;
-
+path = root1, elem2
+value = &quot;Value2&quot;
+attributes:
+attr5 = &quot;val5&quot;
+attr6 = &quot;val6&quot;
 Element:
-path = transaction, nonattr
-value = &quot;text&quot;
-
-Element:
-path = transaction, attr
+path = root2
 value = null
 attributes:
-id=&quot;1&quot;
-
+attr1 = &quot;&quot;
+attr2 = &quot;&quot;
 Element:
-path = transaction, attr
+path = root3
 value = &quot;&quot;
 attributes:
-id=&quot;2&quot;
-
+attr1 = &quot;val2&quot;
+attr2 = &quot;val1&quot;
 Element:
-path = transaction, attr
-value = &quot;text&quot;
-attributes:
-id=&quot;3&quot;
-
-Element:
-path = transaction, email
-
-Element:
-path = transaction, email, to
-value = &quot;to_example@gmail.com&quot;
-
-Element:
-path = transaction, email, from
-value = &quot;from_example@gmail.com&quot;
-
-Element:
-path = transaction, email, subject
-value = &quot;Project discussion&quot;
-
-Element:
-path = transaction, email, body
-value = &quot;Body message&quot;
-attributes:
-font=&quot;Verdana&quot;
-
-Element:
-path = transaction, email, date
-value = null
-attributes:
-day=&quot;12&quot;
-month=&quot;12&quot;
-year=&quot;2018&quot;
-
+path = root4
+value = &quot;Value4&quot;
 ?[1;31m
 Start test 4?[0m
 Element:
 path = transaction
-
 Element:
 path = transaction, id
-value = &quot;6753322&quot;
-
+value = &quot;13243547&quot;
 Element:
 path = transaction, number
-value = &quot;8-900-000-00-00&quot;
+value = &quot;8-900-000-999&quot;
 attributes:
-region=&quot;Russia&quot;
-
+region = &quot;USA&quot;
 Element:
-path = transaction, nonattr
+path = transaction, inner1
+Element:
+path = transaction, inner1, inner2
+Element:
+path = transaction, inner1, inner2, inner3
+Element:
+path = transaction, inner1, inner2, inner3, key1
+value = &quot;value1&quot;
+Element:
+path = transaction, inner1, inner2, inner3, key2
+value = &quot;value2&quot;
+Element:
+path = transaction, inner4
+Element:
+path = transaction, inner4, inner4
+value = &quot;value3&quot;
+Element:
+path = transaction, inner5
+Element:
+path = transaction, inner5, attr1
+value = &quot;123.456&quot;
+Element:
+path = transaction, inner5, inner4
+value = &quot;value4&quot;
+Element:
+path = transaction, inner6
+value = &quot;value5&quot;
+attributes:
+attr2 = &quot;789.321&quot;
+Element:
+path = transaction, inner7
+value = &quot;value6&quot;
+Element:
+path = transaction, inner8
+Element:
+path = transaction, inner8, attr3
+value = &quot;value7&quot;
+Element:
+path = transaction, inner9
+Element:
+path = transaction, inner9, attr4
+value = &quot;value8&quot;
+Element:
+path = transaction, inner9, inner9
+value = &quot;value9&quot;
+Element:
+path = transaction, inner9, something
+value = &quot;value10&quot;
+Element:
+path = transaction, inner10
 value = null
-
+attributes:
+attr5 = &quot;&quot;
 Element:
-path = transaction, nonattr
+path = transaction, inner11
 value = &quot;&quot;
-
 Element:
-path = transaction, nonattr
-value = &quot;text&quot;
-
+path = transaction, inner12
 Element:
-path = transaction, attr
-value = null
-attributes:
-id=&quot;1&quot;
-
+path = transaction, inner12, somekey
+value = &quot;keyvalue&quot;
 Element:
-path = transaction, attr
-value = &quot;&quot;
-attributes:
-id=&quot;2&quot;
-
+path = transaction, inner12, inner12
+value = &quot;notnull&quot;
 Element:
-path = transaction, attr
-value = &quot;text&quot;
-attributes:
-id=&quot;3&quot;
-
+path = meta
 Element:
-path = transaction, email
-
-Element:
-path = transaction, email, to
-value = &quot;to_example@gmail.com&quot;
-
-Element:
-path = transaction, email, from
-value = &quot;from_example@gmail.com&quot;
-
-Element:
-path = transaction, email, subject
-value = &quot;Project discussion&quot;
-
-Element:
-path = transaction, email, body
-value = &quot;Body message&quot;
-attributes:
-font=&quot;Verdana&quot;
-
-Element:
-path = transaction, email, date
-value = null
-attributes:
-day=&quot;12&quot;
-month=&quot;12&quot;
-year=&quot;2018&quot;
-
+path = meta, version
+value = &quot;0.01&quot;
 </pre>
 </span>
 </div>
@@ -394,7 +339,7 @@ year=&quot;2018&quot;
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.3.3</a> at 13 Mar 2022, 10:10:49</p>
+<a href="http://www.gradle.org">Gradle 7.3.3</a> at 14 Mar 2022, 20:43:37</p>
 </div>
 </div>
 </body>

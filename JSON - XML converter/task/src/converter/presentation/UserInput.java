@@ -26,14 +26,207 @@ public class UserInput {
                 break;
             case '{':
                 if (input.contains("#")) {
-                    convertToXML2(input);
+                    //convertToXML2(input);
                 } else {
-                    convertToXML(input);
+                    //convertToXML(input);
                 }
 
+                nestingConverterXML(input);
                 break;
             default:
         }
+    }
+
+    public void nestingConverterXML(String json){
+        //System.out.println(json);
+        Deque<String> t = addToStack(json);
+        processJSON(t);
+    }
+
+    public void processJSON(Deque<String> tokens) {
+        List<String> paths = new ArrayList<>();
+        int i = 0;
+        while(true) {
+            String firstString = tokens.peekFirst();
+            String lastString = tokens.peekLast();
+            String path = "", value = "";
+            if (firstString.equalsIgnoreCase("{") && lastString.equalsIgnoreCase("}")) {
+                tokens.removeLast();
+                tokens.removeFirst();
+            } else {
+                String currentString = tokens.poll().replace("\\+", "");
+                String[] line = currentString.split(":");
+
+                if (line.length == 2) {
+                    String line1 = line[0].strip().replace("\"", "");
+                    String line2 = line[1].strip().replace("\\+", "");
+                    //System.out.printf("%s, %s", line1, line2);
+                    if(line2.equals("{")){
+                        System.out.println("Element:");
+                        if(!paths.contains(line1)){
+                            paths.add(line1);
+                            path = line1;
+                        }
+                        printPaths(paths, "");
+                        boolean status = false;
+                        String nextString = tokens.peek().replace("\\+", "");
+
+                        Map<String, String> attr = new HashMap<>();
+                        boolean same = false;
+                        boolean dontPrint = false;
+
+                        while(nextString.contains("@") || nextString.contains("#")) {
+                            currentString = tokens.poll().replace("\\+", "");
+                            line = currentString.split(":");
+                            line1 = line[0].strip().replace("\"", "");
+                            line2 = line[1].strip().replace("\\+", "").replace("\"", "");
+                            if (line1.contains("@")) {
+                                String key = line1.replace("@","").replace("\"","");
+                                value = line2.replace("\"","").replace(",","");
+                                if(key.length()>1 && !value.equalsIgnoreCase("{")){
+                                    //printAttributesJSON(key, value);
+                                    attr.put(key, value);
+                                } else {
+                                    dontPrint = true;
+                                }
+
+                            } else {
+                                String key = line1.replace("#","").replace("\"","");
+                                value = line2.replace("\"","").replace(",","");
+                                //printValue(value);
+                                if(path.equalsIgnoreCase(key)){
+                                    same=true;
+                                }
+                            }
+                            nextString = tokens.peek().replace("\\+", "");
+                            status = true;
+                        }
+                        if(same){
+                            if(!dontPrint){
+                                if ("null".equalsIgnoreCase(value)) {
+                                    printValue(null);
+                                } else if (value.contains("{") && value.contains("}")){
+                                    printValue("");
+                                } else {
+                                    printValue(value);
+                                }
+                            }
+
+                            for (Map.Entry<String, String> it: attr.entrySet()) {
+                                printAttributesJSON(it.getKey(),it.getValue());
+                            }
+                        }
+                        System.out.println();
+                        if(status){
+                            paths.remove(path);
+                        }
+
+                    } else {
+                        path = line1.replace("\"", "");
+                        value = line2.replace("\"", "").replace(",", "");
+                        System.out.println("Element:");
+                        printPaths(paths, path);
+                        if ("null".equalsIgnoreCase(value)) {
+                            printValue(null);
+                        } else if (value.contains("{") && value.contains("}")){
+                            printValue("");
+                        } else {
+                            printValue(value);
+                        }
+
+
+
+                        System.out.println();
+                    }
+                } else {
+
+                }
+
+            }
+
+            if (i++ == 53){
+                break;
+            }
+
+        }
+        //tokens.stream().forEach(System.out::println);
+    }
+
+    public void processJSON11(Deque<String> tokens) {
+
+        //tokens.stream().forEach(System.out::println);
+        List<String> paths = new ArrayList<>();
+        int i = 0;
+        while(true) {
+            //if (!tokens.isEmpty()) {
+            //System.out.println("working");
+            String firstString = tokens.peekFirst();
+            String lastString = tokens.peekLast();
+            String path = "", value = "";
+            if (firstString.equalsIgnoreCase("{") && lastString.equalsIgnoreCase("}")) {
+                tokens.removeLast();
+                tokens.removeFirst();
+                //processJSON(tokens);
+            } else {
+                String currentString = tokens.poll().replace("\\+", "");
+                String[] line = currentString.split(":");
+
+                if (line.length == 2) {
+                    String line1 = line[0].strip();
+                    String line2 = line[1].strip().replace("\\+", "");
+                    if (!line1.contains("#") && !line1.contains("@") && line2.equalsIgnoreCase("{")) {
+                        path = line1.replace("\"", "");
+                        if(!paths.contains(path)){
+                            paths.add(path);
+                        }
+                        String nextString = tokens.peek().replace("\\+", "");
+                        if(nextString.contains("@")){
+                            processJSON(tokens);
+                        } else {
+
+                        }
+                        System.out.println("Element:");
+                        printPaths(paths, "");
+
+                        System.out.println();
+                    } else if (line1.contains("#") || line1.contains("@")){
+                        if (line1.contains("@")) {
+                            String key = line1.replace("@","").replace("\"","");
+                            value = line2.replace("\"","").replace(",","");
+                            printAttributesJSON(key, value);
+                        } else {
+                            value = line2.replace("\"","").replace(",","");
+                            printValue(value);
+                        }
+                    } else {
+                        path = line1.replace("\"","");
+                        value = line2.replace("\"","").replace(",","");
+                        if(!paths.contains(path)){
+                            paths.add(path);
+                        }
+                        System.out.println("Element:");
+                        printPaths(paths, "");
+                        printValue(value);
+                        System.out.println();
+
+
+                    }
+
+                } else {
+                    if(currentString.equalsIgnoreCase("},")){
+                        //System.out.println(currentString);
+                    }
+
+                }
+                //processJSON(tokens);
+            }
+
+            if (i++ == 5){
+                break;
+            }
+
+        }
+        //tokens.stream().forEach(System.out::println);
     }
 
     public void nestingConverter(String xml){
@@ -143,6 +336,12 @@ public class UserInput {
                 System.out.println(s3[j]);
             }
         }
+    }
+
+    public void printAttributesJSON(String k, String v){
+        System.out.println("attributes:");
+        System.out.println(k+"=\""+v+"\"");
+
     }
 
     public void printPaths(List<String> list, String p){

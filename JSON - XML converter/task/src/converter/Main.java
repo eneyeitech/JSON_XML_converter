@@ -1,5 +1,6 @@
 package converter;
 
+import converter.presentation.Converter;
 import converter.presentation.UserInput;
 
 import java.io.BufferedReader;
@@ -9,6 +10,9 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        /**
+         *
+
         UserInput userInput = new UserInput();
 
         // File path is passed as parameter
@@ -31,7 +35,8 @@ public class Main {
         //System.out.println(content);
 
         userInput.run(content);
-
+*/
+        new Converter().start();
 
     }
 }

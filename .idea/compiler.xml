@@ -9,6 +9,19 @@
       <module name="JSON_-_XML_converter.JSON_-_XML_converter-task-build-test-results.main" target="11" />
       <module name="JSON_-_XML_converter.JSON_-_XML_converter-task-build-tmp.main" target="11" />
       <module name="JSON_-_XML_converter.JSON_-_XML_converter-task.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Reflection_basics-Declared_fields.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Reflection_basics-Theory.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-Counting_2D_shapes.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-File_classes.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-File_equality.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-Find_a_statement_that_returns_false.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-Select_statements.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-Theory.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Runtime_type_checking-Who_is_who.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Type_Bounds-Enums.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Type_Bounds-Multiple_type_bounds.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Type_Bounds-Theory.main" target="11" />
+      <module name="JSON_-_XML_converter.Topics-Type_Bounds-Writing_a_class.main" target="11" />
       <module name="JSON_-_XML_converter.util.main" target="11" />
     </bytecodeTargetLevel>
   </component>
